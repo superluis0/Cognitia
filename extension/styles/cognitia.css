@@ -394,6 +394,28 @@
   margin-bottom: 12px;
 }
 
+.cognitia-sidebar-section p {
+  color: var(--cog-text-primary);
+  font-family: var(--cog-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.cognitia-tweet-link {
+  color: var(--cog-ember-1);
+  text-decoration: none;
+  font-family: var(--cog-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  transition: color 0.2s ease;
+  cursor: pointer;
+}
+
+.cognitia-tweet-link:hover {
+  color: var(--cog-ember-2);
+  text-decoration: underline;
+}
+
 /* Quick Questions */
 .cognitia-quick-questions {
   display: flex;
@@ -543,9 +565,15 @@
 .cognitia-chat-message-assistant {
   background: var(--cog-glass);
   border: 1px solid var(--cog-glass-border);
-  color: var(--cog-text-secondary);
+  color: var(--cog-text-primary);
   margin-right: 32px;
   border-bottom-left-radius: 4px;
+}
+
+.cognitia-chat-message-assistant p,
+.cognitia-chat-message-assistant span,
+.cognitia-chat-message-assistant div {
+  color: var(--cog-text-primary);
 }
 
 /* Grokipedia Link */
@@ -746,6 +774,7 @@
 .cognitia-chat-message-assistant .cognitia-list {
   margin: 0.4em 0;
   padding-left: 1.3em;
+  color: var(--cog-text-primary);
 }
 
 .cognitia-chat-message-assistant .cognitia-code-block {

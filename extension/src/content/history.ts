@@ -34,12 +34,15 @@ export interface ChatHistoryItem {
   chatType: 'general' | 'topic';
   topicTitle?: string;
   topicId?: number;
+  topicUrl?: string;
+  topicSummary?: string;
   fullConversation: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
 export interface FactCheckHistoryItem {
   id: string;
   tweetText: string;
+  tweetUrl?: string;
   claimsCount: number;
   verdictSummary: 'all-true' | 'mixed' | 'all-false' | 'unverifiable';
   timestamp: number;
@@ -123,7 +126,9 @@ export async function addChatToHistory(
   chatType: 'general' | 'topic',
   fullConversation: Array<{ role: 'user' | 'assistant'; content: string }>,
   topicTitle?: string,
-  topicId?: number
+  topicId?: number,
+  topicUrl?: string,
+  topicSummary?: string
 ): Promise<string> {
   try {
     const result = await chrome.storage.local.get(['recentChats']);
@@ -139,6 +144,8 @@ export async function addChatToHistory(
       chatType,
       topicTitle,
       topicId,
+      topicUrl,
+      topicSummary,
       fullConversation
     });
 
@@ -156,7 +163,7 @@ export async function addChatToHistory(
 }
 
 // Add fact check to history
-export async function addFactCheckToHistory(tweetText: string, claims: ClaimResult[]): Promise<void> {
+export async function addFactCheckToHistory(tweetText: string, claims: ClaimResult[], tweetUrl?: string): Promise<void> {
   try {
     // Don't add if no claims found
     if (!claims || claims.length === 0) {
@@ -171,6 +178,7 @@ export async function addFactCheckToHistory(tweetText: string, claims: ClaimResu
     factChecks.unshift({
       id: `factcheck-${timestamp}-${Math.random().toString(36).substr(2, 9)}`,
       tweetText: truncateText(tweetText, 100),
+      tweetUrl,
       claimsCount: claims.length,
       verdictSummary: calculateVerdictSummary(claims),
       timestamp,

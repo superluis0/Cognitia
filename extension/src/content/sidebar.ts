@@ -23,6 +23,7 @@ import {
 
 let sidebarElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
+let currentTopicSummary: string = '';
 let chatHistory: ChatMessage[] = [];
 let currentChatId: string | null = null;
 let isGeneralChatMode = false;
@@ -184,12 +185,15 @@ async function loadSummary(topic: Topic, container: HTMLElement): Promise<void> 
     });
     
     if (response.success) {
+      currentTopicSummary = response.data.summary;
       container.innerHTML = sanitizeHtml(renderMarkdown(response.data.summary));
     } else {
-      container.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
+      currentTopicSummary = topic.summary || 'Unable to load summary.';
+      container.innerHTML = sanitizeHtml(renderMarkdown(currentTopicSummary));
     }
   } catch (error) {
-    container.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
+    currentTopicSummary = topic.summary || 'Unable to load summary.';
+    container.innerHTML = sanitizeHtml(renderMarkdown(currentTopicSummary));
   }
 }
 
@@ -245,7 +249,8 @@ async function sendChatMessage(): Promise<void> {
     const chatType = isGeneralChatMode ? 'general' : 'topic';
     const topicTitle = currentTopic?.title;
     const topicId = currentTopic?.id;
-    currentChatId = await addChatToHistory(message, chatType, chatHistory, topicTitle, topicId);
+    const topicUrl = currentTopic?.url;
+    currentChatId = await addChatToHistory(message, chatType, chatHistory, topicTitle, topicId, topicUrl, currentTopicSummary);
   }
   appendChatMessage(historyEl, 'user', message);
   
@@ -399,7 +404,15 @@ export async function openSettings(): Promise<void> {
   const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
   const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
   
-  if (titleEl) titleEl.textContent = 'Cognitia Settings';
+  // Create header that mirrors the popup
+  if (titleEl) {
+    titleEl.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 12px;">
+        <div style="width: 32px; height: 32px; background: linear-gradient(135deg, #f59e0b, #d97706, #b45309); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-family: 'Clash Display', sans-serif; font-weight: 700; font-size: 16px; color: white; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3), 0 0 20px rgba(217, 119, 6, 0.2);">C</div>
+        <span style="font-family: 'Clash Display', sans-serif; font-size: 18px; font-weight: 600; background: linear-gradient(135deg, #f59e0b, #d97706, #b45309); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Cognitia</span>
+      </div>
+    `;
+  }
   if (chatContainer) chatContainer.style.display = 'none';
   
   // Load current settings
@@ -727,7 +740,7 @@ export async function openHistory(): Promise<void> {
   sidebar.classList.add('open');
 }
 
-export async function openFactCheck(tweetText: string): Promise<void> {
+export async function openFactCheck(tweetText: string, tweetId?: string): Promise<void> {
   // Always destroy existing sidebar and create fresh
   if (sidebarElement) {
     sidebarElement.remove();
@@ -799,7 +812,8 @@ export async function openFactCheck(tweetText: string): Promise<void> {
       }
 
       // Track successful fact-check in history
-      addFactCheckToHistory(tweetText, claims);
+      const tweetUrl = tweetId ? `https://x.com/i/web/status/${tweetId}` : undefined;
+      addFactCheckToHistory(tweetText, claims, tweetUrl);
 
       if (resultsEl) {
         resultsEl.innerHTML = claims.map((claim: any, index: number) => `
@@ -863,26 +877,52 @@ async function restoreChatSession(chatItem: ChatHistoryItem): Promise<void> {
   }
 
   const sidebar = createSidebar();
+  sidebarElement = sidebar;
   
   // Restore chat state
   chatHistory = chatItem.fullConversation || [];
   currentChatId = chatItem.id;
+  isGeneralChatMode = false;
+  isSettingsMode = false;
+  isFactCheckMode = false;
   
   if (chatItem.chatType === 'general') {
     isGeneralChatMode = true;
   } else if (chatItem.topicId) {
-    // Would need to fetch the topic, for now just set the title
-    currentTopic = { id: chatItem.topicId, title: chatItem.topicTitle || '', url: '', summary: '' };
+    currentTopic = { 
+      id: chatItem.topicId, 
+      title: chatItem.topicTitle || '', 
+      url: chatItem.topicUrl || '', 
+      summary: chatItem.topicSummary || '' 
+    };
+    currentTopicSummary = chatItem.topicSummary || '';
   }
 
   const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
   const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const summaryEl = sidebar.querySelector('.cognitia-sidebar-summary') as HTMLElement;
+  const questionsEl = sidebar.querySelector('.cognitia-quick-questions') as HTMLElement;
+  const linkEl = sidebar.querySelector('.cognitia-grokipedia-link') as HTMLAnchorElement;
   const historyEl = sidebar.querySelector('.cognitia-chat-history') as HTMLElement;
   const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
 
-  if (titleEl) titleEl.textContent = chatItem.chatType === 'general' ? 'Chat with Grok' : `Chat: ${chatItem.topicTitle}`;
-  if (chatContainer) chatContainer.style.display = 'flex';
+  if (titleEl) titleEl.textContent = chatItem.chatType === 'general' ? 'Chat with Grok' : chatItem.topicTitle || '';
   if (contentEl) contentEl.style.display = 'block';
+  if (chatContainer) chatContainer.style.display = 'flex';
+  
+  // For topic chats, display stored summary without fetching from Grok
+  if (chatItem.chatType === 'topic') {
+    if (summaryEl && chatItem.topicSummary) {
+      summaryEl.innerHTML = sanitizeHtml(renderMarkdown(chatItem.topicSummary));
+    }
+    if (questionsEl) {
+      questionsEl.style.display = 'none';
+    }
+    if (linkEl && chatItem.topicUrl) {
+      linkEl.href = chatItem.topicUrl;
+      linkEl.style.display = 'block';
+    }
+  }
 
   // Render full conversation history
   if (historyEl) {
@@ -904,6 +944,12 @@ async function restoreFactCheckResults(factCheckItem: FactCheckHistoryItem): Pro
   }
 
   const sidebar = createSidebar();
+  sidebarElement = sidebar;
+  
+  isGeneralChatMode = false;
+  isSettingsMode = false;
+  currentTopic = null;
+  chatHistory = [];
   isFactCheckMode = true;
 
   const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
@@ -914,38 +960,67 @@ async function restoreFactCheckResults(factCheckItem: FactCheckHistoryItem): Pro
   if (chatContainer) chatContainer.style.display = 'none';
 
   if (contentEl) {
-    // Render the fact-check results
+    // Match live fact-check display format exactly
     let resultHTML = `
-      <div class="cognitia-sidebar-section">
-        <div class="cognitia-history-item-title">Tweet:</div>
-        <p>"${escapeHtml(factCheckItem.tweetText)}"</p>
+      <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-1">
+        <div class="cognitia-sidebar-section-title">Tweet</div>
+        ${factCheckItem.tweetUrl 
+          ? `<a href="${factCheckItem.tweetUrl}" target="_blank" class="cognitia-tweet-link">"${escapeHtml(factCheckItem.tweetText)}"</a>`
+          : `<p>"${escapeHtml(factCheckItem.tweetText)}"</p>`
+        }
       </div>
-      <div class="cognitia-sidebar-section">
-        <div class="cognitia-history-item-title">Verdict: ${getVerdictLabel(factCheckItem.verdictSummary)}</div>
+      <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-2">
+        <div class="cognitia-sidebar-section-title">Analysis</div>
+        <div class="cognitia-fact-check-results">
     `;
 
     if (factCheckItem.fullResults && factCheckItem.fullResults.length > 0) {
-      resultHTML += '<div class="cognitia-fact-check-results">';
-      factCheckItem.fullResults.forEach(result => {
-        const verdictIcon = getVerdictIcon(result.verdict);
+      factCheckItem.fullResults.forEach((claim: any, index: number) => {
         resultHTML += `
-          <div class="cognitia-fact-check-result-item">
-            <div class="cognitia-fact-check-verdict-badge cognitia-verdict-${result.verdict}">
-              ${verdictIcon} ${getVerdictLabel(result.verdict)}
+          <div class="cognitia-fact-check-claim cognitia-reveal cognitia-reveal-${index + 1}">
+            <div class="cognitia-fact-check-verdict cognitia-verdict-${claim.verdict}">
+              <span class="cognitia-verdict-icon">${getVerdictIcon(claim.verdict)}</span>
+              <span class="cognitia-verdict-label">${getVerdictLabel(claim.verdict)}</span>
             </div>
-            <div class="cognitia-fact-check-claim">"${escapeHtml(result.claim)}"</div>
-            <div class="cognitia-fact-check-explanation">${sanitizeHtml(renderMarkdown(result.explanation))}</div>
-            ${result.source.type === 'grokipedia' && result.source.url ? 
-              `<a href="${result.source.url}" target="_blank" class="cognitia-source-link">📖 ${result.source.type}</a>` :
-              `<span class="cognitia-source-note">Source: ${result.source.type}</span>`
-            }
+            <div class="cognitia-fact-check-claim-text">"${escapeHtml(claim.claim)}"</div>
+            <div class="cognitia-fact-check-explanation">${escapeHtml(claim.explanation)}</div>
+            <div class="cognitia-fact-check-source ${claim.source.type}">
+              ${claim.source.type === 'grokipedia' 
+                ? `<a href="${claim.source.url}" target="_blank" class="cognitia-fact-check-source-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 16v-4"/>
+                      <path d="M12 8h.01"/>
+                    </svg>
+                    Source: Grokipedia
+                  </a>`
+                : `<div class="cognitia-fact-check-source-note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 8v4"/>
+                      <path d="M12 16h.01"/>
+                    </svg>
+                    ${escapeHtml(claim.source.note || 'Verified by Grok')}
+                  </div>`
+              }
+            </div>
           </div>
         `;
       });
-      resultHTML += '</div>';
+    } else {
+      resultHTML += `
+        <div class="cognitia-fact-check-no-claims">
+          <div class="cognitia-fact-check-icon cognitia-fact-check-icon-info">?</div>
+          <p>No claims found.</p>
+        </div>
+      `;
     }
 
-    resultHTML += '</div>';
+    resultHTML += `
+        </div>
+      </div>
+    `;
+
     contentEl.innerHTML = resultHTML;
   }
 

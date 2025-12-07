@@ -36,7 +36,7 @@ function createFactCheckButton(tweetId: string, tweetText: string): HTMLElement 
     e.preventDefault();
     e.stopPropagation();
     try {
-      openFactCheck(tweetText);
+      openFactCheck(tweetText, tweetId);
     } catch (error) {
       console.error('[Cognitia] Error opening fact check:', error);
     }
