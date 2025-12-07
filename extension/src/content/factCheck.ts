@@ -35,7 +35,11 @@ function createFactCheckButton(tweetId: string, tweetText: string): HTMLElement 
   button.addEventListener('click', (e) => {
     e.preventDefault();
     e.stopPropagation();
-    openFactCheck(tweetText);
+    try {
+      openFactCheck(tweetText);
+    } catch (error) {
+      console.error('[Cognitia] Error opening fact check:', error);
+    }
   });
   
   container.appendChild(button);
@@ -87,36 +91,40 @@ function extractTweetIdFromArticle(article: HTMLElement): string | null {
 }
 
 function injectFactCheckButton(article: HTMLElement): void {
-  const tweetId = extractTweetIdFromArticle(article);
-  if (!tweetId) return;
+  try {
+    const tweetId = extractTweetIdFromArticle(article);
+    if (!tweetId) return;
 
-  // Check if button already exists anywhere in the article
-  if (article.querySelector(`.${FACT_CHECK_CONTAINER_CLASS}`)) return;
+    // Check if button already exists anywhere in the article
+    if (article.querySelector(`.${FACT_CHECK_CONTAINER_CLASS}`)) return;
 
-  // Get tweet text - include all text content even if no dedicated text element
-  let tweetText = '';
-  const tweetTextEl = getTweetTextElement(article);
-  if (tweetTextEl) {
-    tweetText = tweetTextEl.textContent || '';
-  } else {
-    // Fallback: try to get text from the article itself
-    const textDiv = article.querySelector('[lang]');
-    if (textDiv) {
-      tweetText = textDiv.textContent || '';
+    // Get tweet text - include all text content even if no dedicated text element
+    let tweetText = '';
+    const tweetTextEl = getTweetTextElement(article);
+    if (tweetTextEl) {
+      tweetText = tweetTextEl.textContent || '';
+    } else {
+      // Fallback: try to get text from the article itself
+      const textDiv = article.querySelector('[lang]');
+      if (textDiv) {
+        tweetText = textDiv.textContent || '';
+      }
     }
+
+    // Don't require text - user might want to fact-check image/media tweets too
+    const container = createFactCheckButton(tweetId, tweetText || '[No text content]');
+
+    // Simple approach: absolute position at article level
+    const computedStyle = window.getComputedStyle(article);
+    if (computedStyle.position === 'static') {
+      article.style.position = 'relative';
+    }
+    article.insertBefore(container, article.firstChild);
+
+    processedTweets.add(tweetId);
+  } catch (error) {
+    console.error('[Cognitia] Error injecting fact-check button:', error);
   }
-
-  // Don't require text - user might want to fact-check image/media tweets too
-  const container = createFactCheckButton(tweetId, tweetText || '[No text content]');
-
-  // Simple approach: absolute position at article level
-  const computedStyle = window.getComputedStyle(article);
-  if (computedStyle.position === 'static') {
-    article.style.position = 'relative';
-  }
-  article.insertBefore(container, article.firstChild);
-
-  processedTweets.add(tweetId);
 }
 
 export function injectFactCheckButtons(): void {

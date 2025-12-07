@@ -43,13 +43,15 @@
     
     body {
       width: 340px;
+      height: 600px;
       font-family: var(--font-body);
       background: var(--void);
       color: var(--text-primary);
       padding: 3px;
       position: relative;
+      overflow: hidden;
     }
-    
+
     /* Ember border wrapper */
     .ember-border {
       background: var(--gradient-ember);
@@ -57,6 +59,8 @@
       animation: aurora-shift 8s ease infinite;
       border-radius: 16px;
       padding: 1px;
+      height: 100%;
+      box-sizing: border-box;
     }
     
     @keyframes aurora-shift {
@@ -69,7 +73,10 @@
       border-radius: 15px;
       padding: 20px;
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
+      overflow-x: hidden;
+      height: 100%;
+      box-sizing: border-box;
     }
     
     /* Grain texture overlay */
@@ -97,6 +104,35 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 24px;
+      position: relative;
+    }
+
+    .close-btn {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 28px;
+      height: 28px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: var(--text-secondary);
+    }
+
+    .close-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.15);
+      color: var(--text-primary);
+    }
+
+    .close-btn svg {
+      width: 14px;
+      height: 14px;
     }
     
     .logo {
@@ -510,6 +546,7 @@
     .footer {
       margin-top: 20px;
       padding-top: 16px;
+      padding-bottom: 16px;
       border-top: 1px solid var(--glass-border);
       text-align: center;
     }
@@ -530,16 +567,16 @@
     /* Reveal animations */
     .reveal {
       opacity: 0;
-      transform: translateY(15px);
-      animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      transform: translateY(8px);
+      animation: reveal 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
-    
+
     .reveal-1 { animation-delay: 0ms; }
-    .reveal-2 { animation-delay: 80ms; }
-    .reveal-3 { animation-delay: 160ms; }
-    .reveal-4 { animation-delay: 240ms; }
-    .reveal-5 { animation-delay: 320ms; }
-    
+    .reveal-2 { animation-delay: 20ms; }
+    .reveal-3 { animation-delay: 40ms; }
+    .reveal-4 { animation-delay: 60ms; }
+    .reveal-5 { animation-delay: 80ms; }
+
     @keyframes reveal {
       to {
         opacity: 1;
@@ -554,6 +591,12 @@
       <div class="header reveal reveal-1">
         <div class="logo">C</div>
         <span class="title">Cognitia</span>
+        <button class="close-btn" id="closeBtn" title="Close">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
       </div>
       
       <div class="section reveal reveal-2">

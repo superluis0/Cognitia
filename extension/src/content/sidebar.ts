@@ -1,6 +1,22 @@
 import type { Topic, ChatMessage } from '../../../shared/types';
 import { renderMarkdown, sanitizeHtml } from './markdown';
 import { setHighlightStyle, clearHighlights } from './highlighter';
+import {
+  addTopicToHistory,
+  addChatToHistory,
+  addFactCheckToHistory,
+  getRecentTopics,
+  getRecentChats,
+  getRecentFactChecks,
+  clearAllHistory,
+  clearTopicHistory,
+  clearChatHistory,
+  clearFactCheckHistory,
+  formatRelativeTime,
+  type TopicHistoryItem,
+  type ChatHistoryItem,
+  type FactCheckHistoryItem
+} from './history';
 
 let sidebarElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
@@ -130,7 +146,10 @@ export async function openSidebar(topic: Topic): Promise<void> {
   if (historyEl) historyEl.innerHTML = '';
   
   sidebar.classList.add('open');
-  
+
+  // Track topic view in history
+  addTopicToHistory(topic);
+
   loadSummary(topic, summaryEl);
   loadQuickQuestions(topic, questionsEl);
 }
@@ -196,7 +215,14 @@ async function sendChatMessage(): Promise<void> {
   input.value = '';
   input.disabled = true;
   sendBtn.disabled = true;
-  
+
+  // Track first message in history
+  if (chatHistory.length === 0) {
+    const chatType = isGeneralChatMode ? 'general' : 'topic';
+    const topicTitle = currentTopic?.title;
+    addChatToHistory(message, chatType, topicTitle);
+  }
+
   chatHistory.push({ role: 'user', content: message });
   appendChatMessage(historyEl, 'user', message);
   
@@ -410,6 +436,18 @@ export async function openSettings(): Promise<void> {
             <span>✨</span> Chat with Grok
           </button>
         </div>
+
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-5">
+          <button class="cognitia-btn cognitia-btn-secondary" id="cognitia-view-history-btn">
+            <span>📜</span> View History
+          </button>
+        </div>
+
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-6">
+          <button class="cognitia-btn cognitia-btn-danger" id="cognitia-clear-history-btn">
+            Clear All History
+          </button>
+        </div>
       </div>
     `;
     
@@ -464,8 +502,173 @@ export async function openSettings(): Promise<void> {
     chatBtn?.addEventListener('click', () => {
       openGeneralChat();
     });
+
+    // View History button
+    const historyBtn = contentEl.querySelector('#cognitia-view-history-btn');
+    historyBtn?.addEventListener('click', () => {
+      openHistory();
+    });
+
+    // Clear History button
+    const clearBtn = contentEl.querySelector('#cognitia-clear-history-btn');
+    clearBtn?.addEventListener('click', async () => {
+      if (confirm('Are you sure you want to clear all history? This cannot be undone.')) {
+        await clearAllHistory();
+        alert('History cleared successfully!');
+      }
+    });
   }
-  
+
+  sidebar.classList.add('open');
+}
+
+export async function openHistory(): Promise<void> {
+  // Always destroy existing sidebar and create fresh
+  if (sidebarElement) {
+    sidebarElement.remove();
+    sidebarElement = null;
+  }
+
+  const sidebar = createSidebar();
+  currentTopic = null;
+  chatHistory = [];
+  isGeneralChatMode = false;
+  isSettingsMode = false;
+  isFactCheckMode = false;
+
+  const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
+  const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
+
+  if (titleEl) titleEl.textContent = 'History';
+  if (chatContainer) chatContainer.style.display = 'none';
+
+  // Load history data
+  const topics = await getRecentTopics();
+  const chats = await getRecentChats();
+  const factChecks = await getRecentFactChecks();
+
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <div class="cognitia-history-view">
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-1">
+          <div class="cognitia-history-tabs">
+            <button class="cognitia-history-tab active" data-tab="topics">Topics</button>
+            <button class="cognitia-history-tab" data-tab="chats">Chats</button>
+            <button class="cognitia-history-tab" data-tab="fact-checks">Fact Checks</button>
+          </div>
+        </div>
+
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-2">
+          <div class="cognitia-history-content" data-content="topics">
+            ${topics.length > 0 ? topics.map((item, index) => `
+              <div class="cognitia-history-item" data-topic-id="${item.topic.id}">
+                <div class="cognitia-history-item-title">${escapeHtml(item.topic.title)}</div>
+                <div class="cognitia-history-item-meta">
+                  <span class="cognitia-history-item-time">${item.viewedAt}</span>
+                </div>
+              </div>
+            `).join('') : '<div class="cognitia-history-empty">No topics viewed yet</div>'}
+            ${topics.length > 0 ? `
+              <div class="cognitia-history-actions">
+                <button class="cognitia-clear-history-btn" data-clear="topics">Clear Topic History</button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="cognitia-history-content" data-content="chats" style="display: none;">
+            ${chats.length > 0 ? chats.map((item, index) => `
+              <div class="cognitia-history-item">
+                <div class="cognitia-history-item-title">${escapeHtml(item.firstMessage)}</div>
+                <div class="cognitia-history-item-meta">
+                  <span class="cognitia-history-item-type">${item.chatType === 'general' ? 'General Chat' : `About: ${item.topicTitle}`}</span>
+                  <span class="cognitia-history-item-time">${formatRelativeTime(item.timestamp)}</span>
+                </div>
+              </div>
+            `).join('') : '<div class="cognitia-history-empty">No chats started yet</div>'}
+            ${chats.length > 0 ? `
+              <div class="cognitia-history-actions">
+                <button class="cognitia-clear-history-btn" data-clear="chats">Clear Chat History</button>
+              </div>
+            ` : ''}
+          </div>
+
+          <div class="cognitia-history-content" data-content="fact-checks" style="display: none;">
+            ${factChecks.length > 0 ? factChecks.map((item, index) => `
+              <div class="cognitia-history-item">
+                <div class="cognitia-history-item-title">"${escapeHtml(item.tweetText)}"</div>
+                <div class="cognitia-history-item-meta">
+                  <span class="cognitia-history-item-verdict cognitia-verdict-${item.verdictSummary}">
+                    ${item.claimsCount} claim${item.claimsCount !== 1 ? 's' : ''} - ${getVerdictLabel(item.verdictSummary)}
+                  </span>
+                  <span class="cognitia-history-item-time">${item.analyzedAt}</span>
+                </div>
+              </div>
+            `).join('') : '<div class="cognitia-history-empty">No fact checks performed yet</div>'}
+            ${factChecks.length > 0 ? `
+              <div class="cognitia-history-actions">
+                <button class="cognitia-clear-history-btn" data-clear="fact-checks">Clear Fact-Check History</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      </div>
+    `;
+
+    // Tab switching
+    const tabs = contentEl.querySelectorAll('.cognitia-history-tab');
+    const contents = contentEl.querySelectorAll('.cognitia-history-content');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        const tabName = tab.getAttribute('data-tab');
+
+        tabs.forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+
+        contents.forEach(c => {
+          const contentName = c.getAttribute('data-content');
+          if (contentName === tabName) {
+            (c as HTMLElement).style.display = 'block';
+          } else {
+            (c as HTMLElement).style.display = 'none';
+          }
+        });
+      });
+    });
+
+    // Topic click handlers
+    const topicItems = contentEl.querySelectorAll('[data-topic-id]');
+    topicItems.forEach(item => {
+      item.addEventListener('click', () => {
+        const topicId = parseInt(item.getAttribute('data-topic-id') || '0');
+        const topic = topics.find(t => t.topic.id === topicId)?.topic;
+        if (topic) {
+          openSidebar(topic);
+        }
+      });
+    });
+
+    // Clear history buttons
+    const clearButtons = contentEl.querySelectorAll('[data-clear]');
+    clearButtons.forEach(button => {
+      button.addEventListener('click', async () => {
+        const type = button.getAttribute('data-clear');
+        if (confirm(`Are you sure you want to clear ${type === 'topics' ? 'topic' : type === 'chats' ? 'chat' : 'fact-check'} history?`)) {
+          if (type === 'topics') {
+            await clearTopicHistory();
+          } else if (type === 'chats') {
+            await clearChatHistory();
+          } else if (type === 'fact-checks') {
+            await clearFactCheckHistory();
+          }
+          // Reload history view
+          openHistory();
+        }
+      });
+    });
+  }
+
   sidebar.classList.add('open');
 }
 
@@ -539,7 +742,10 @@ export async function openFactCheck(tweetText: string): Promise<void> {
         }
         return;
       }
-      
+
+      // Track successful fact-check in history
+      addFactCheckToHistory(tweetText, claims);
+
       if (resultsEl) {
         resultsEl.innerHTML = claims.map((claim: any, index: number) => `
           <div class="cognitia-fact-check-claim cognitia-reveal cognitia-reveal-${index + 1}">

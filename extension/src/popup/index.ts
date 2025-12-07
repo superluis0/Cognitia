@@ -91,13 +91,18 @@ async function openGrokChat(): Promise<void> {
 
 document.addEventListener('DOMContentLoaded', () => {
   loadSettings();
-  
+
   const saveBtn = document.getElementById('saveBtn');
   saveBtn?.addEventListener('click', saveSettings);
-  
+
   const chatBtn = document.getElementById('chatBtn');
   chatBtn?.addEventListener('click', openGrokChat);
-  
+
+  const closeBtn = document.getElementById('closeBtn');
+  closeBtn?.addEventListener('click', () => {
+    window.close();
+  });
+
   // Handle swatch clicks
   const swatches = document.querySelectorAll('.style-swatch');
   swatches.forEach(swatch => {
