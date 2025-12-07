@@ -96,6 +96,14 @@ export const POPULAR_TOPICS = [
   'James_Webb_Space_Telescope',
   'Black_Hole',
   'Quantum_Computing',
+  'Physics',
+  'Classical_physics',
+  'Quantum_mechanics',
+  'Momentum',
+  'Biology',
+  'Evolution',
+  'Metabolism',
+  'Physiology',
   
   // Culture & Media
   'Netflix',
@@ -114,10 +122,17 @@ export const POPULAR_TOPICS = [
   'S%26P_500',
   'Wall_Street',
   
-  // Health
+  // Health & Medicine
   'COVID-19',
   'World_Health_Organization',
   'Vaccine',
+  'Medicine',
+  'Pharmacology',
+  'Hippocratic_Oath',
+  
+  // History & Culture
+  'Egyptian',
+  'Middle_English',
   
   // Other trending
   'The_Beatles',
