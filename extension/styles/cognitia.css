@@ -1,12 +1,64 @@
 .cognitia-highlight {
-  border-bottom: 1px dotted #1DA1F2;
   cursor: pointer;
-  position: relative;
 }
 
 .cognitia-highlight:hover {
-  border-bottom-color: #0d8ecf;
-  background-color: rgba(29, 161, 242, 0.1);
+  background-color: rgba(29, 161, 242, 0.15) !important;
+  border-radius: 2px;
+}
+
+/* Dotted underline (default) */
+.cognitia-highlight.dotted {
+  text-decoration: underline dotted #1DA1F2;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* Solid underline */
+.cognitia-highlight.solid {
+  text-decoration: underline solid #1DA1F2;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* Dashed underline */
+.cognitia-highlight.dashed {
+  text-decoration: underline dashed #1DA1F2;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+}
+
+/* Wavy underline */
+.cognitia-highlight.wavy {
+  text-decoration: underline wavy #1DA1F2;
+  text-underline-offset: 2px;
+}
+
+/* Background tint only */
+.cognitia-highlight.tint {
+  background: rgba(29, 161, 242, 0.12);
+  border-radius: 3px;
+  padding: 0 3px;
+  margin: 0 -3px;
+}
+
+/* Tint + dotted underline */
+.cognitia-highlight.tint-dotted {
+  background: rgba(29, 161, 242, 0.08);
+  text-decoration: underline dotted #1DA1F2;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 2px;
+  border-radius: 2px;
+  padding: 0 2px;
+  margin: 0 -2px;
+}
+
+/* Colored text */
+.cognitia-highlight.colored {
+  color: #1DA1F2;
+  text-decoration: underline dotted #1DA1F2;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
 }
 
 .cognitia-tooltip {

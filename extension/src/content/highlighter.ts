@@ -3,6 +3,20 @@ import { extractTweetIds, getTweetTextElement } from './tweetIdExtractor';
 import { showTooltip, hideTooltip } from './tooltip';
 
 const processedTweets = new Set<string>();
+let currentHighlightStyle = 'dotted';
+
+export function setHighlightStyle(style: string): void {
+  currentHighlightStyle = style;
+  // Update existing highlights
+  const highlights = document.querySelectorAll('.cognitia-highlight');
+  highlights.forEach((el) => {
+    el.className = 'cognitia-highlight ' + style;
+  });
+}
+
+export function getHighlightStyle(): string {
+  return currentHighlightStyle;
+}
 
 export function highlightMatches(tweetId: string, matches: TopicMatch[]): void {
   if (processedTweets.has(tweetId)) {
@@ -87,7 +101,7 @@ function wrapTextWithHighlight(
   }
   
   const highlight = document.createElement('span');
-  highlight.className = 'cognitia-highlight';
+  highlight.className = 'cognitia-highlight ' + currentHighlightStyle;
   highlight.textContent = matchedText;
   highlight.dataset.topicId = String(topic.id);
   highlight.dataset.topicTitle = topic.title;

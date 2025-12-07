@@ -1,13 +1,33 @@
 import { observeTweets, observeScroll, getVisibleTweetIds } from './tweetIdExtractor';
-import { highlightMatches, isProcessed } from './highlighter';
+import { highlightMatches, isProcessed, setHighlightStyle } from './highlighter';
 import { createTooltip } from './tooltip';
 import { createSidebar } from './sidebar';
 import type { TweetWithMatches } from '../../../shared/types';
 
 const processedTweetIds = new Set<string>();
 
+async function loadHighlightStyle(): Promise<void> {
+  try {
+    const result = await chrome.storage.sync.get(['cognitiaSettings']);
+    const settings = result.cognitiaSettings || {};
+    setHighlightStyle(settings.highlightStyle || 'dotted');
+  } catch (error) {
+    console.error('[Cognitia] Error loading highlight style:', error);
+  }
+}
+
 async function init(): Promise<void> {
   console.log('[Cognitia] Initializing...');
+  
+  await loadHighlightStyle();
+  
+  // Listen for settings changes
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'sync' && changes.cognitiaSettings) {
+      const newSettings = changes.cognitiaSettings.newValue || {};
+      setHighlightStyle(newSettings.highlightStyle || 'dotted');
+    }
+  });
   
   createTooltip();
   createSidebar();
