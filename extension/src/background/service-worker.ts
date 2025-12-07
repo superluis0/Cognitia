@@ -149,6 +149,30 @@ async function handleGetQuickQuestions(
   }
 }
 
+async function handleFactCheck(
+  tweetText: string
+): Promise<MessageResponse<any>> {
+  try {
+    const settings = await getSettings();
+    
+    const response = await fetch(`${settings.backendUrl}/api/fact-check`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ tweetText })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('[Cognitia] Fact check error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
 chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse) => {
   (async () => {
     switch (message.type) {
@@ -173,6 +197,9 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       
       case 'GET_QUICK_QUESTIONS':
         return handleGetQuickQuestions(message.payload.topic);
+      
+      case 'FACT_CHECK':
+        return handleFactCheck(message.payload.tweetText);
       
       case 'OPEN_SIDEBAR':
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {

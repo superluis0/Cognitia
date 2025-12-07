@@ -2,6 +2,7 @@ import { observeTweets, observeScroll, getVisibleTweetIds } from './tweetIdExtra
 import { highlightMatches, isProcessed, setHighlightStyle, clearHighlights } from './highlighter';
 import { createTooltip } from './tooltip';
 import { createSidebar } from './sidebar';
+import { injectFactCheckButtons, observeForFactCheckButtons, clearFactCheckProcessed } from './factCheck';
 import type { TweetWithMatches } from '../../../shared/types';
 
 const processedTweetIds = new Set<string>();
@@ -51,6 +52,10 @@ async function init(): Promise<void> {
   
   createTooltip();
   createSidebar();
+  
+  // Inject fact-check buttons
+  injectFactCheckButtons();
+  observeForFactCheckButtons();
   
   const processNewTweets = async (tweetIds: string[]) => {
     const unprocessedIds = tweetIds.filter(id => !processedTweetIds.has(id) && !isProcessed(id));
@@ -109,11 +114,14 @@ async function init(): Promise<void> {
     // Clear processed caches
     processedTweetIds.clear();
     clearHighlights();
+    clearFactCheckProcessed();
     // Re-scan visible tweets
     const visibleIds = getVisibleTweetIds();
     if (visibleIds.length > 0) {
       processNewTweets(visibleIds);
     }
+    // Re-inject fact-check buttons
+    injectFactCheckButtons();
   }, REFRESH_INTERVAL_MS);
   
   console.log('[Cognitia] Initialized successfully (auto-refresh every 5 minutes)');

@@ -7,6 +7,7 @@ let currentTopic: Topic | null = null;
 let chatHistory: ChatMessage[] = [];
 let isGeneralChatMode = false;
 let isSettingsMode = false;
+let isFactCheckMode = false;
 
 export function createSidebar(): HTMLElement {
   if (sidebarElement) {
@@ -468,4 +469,147 @@ export async function openSettings(): Promise<void> {
   sidebar.classList.add('open');
 }
 
+export async function openFactCheck(tweetText: string): Promise<void> {
+  // Always destroy existing sidebar and create fresh
+  if (sidebarElement) {
+    sidebarElement.remove();
+    sidebarElement = null;
+  }
+  
+  const sidebar = createSidebar();
+  currentTopic = null;
+  chatHistory = [];
+  isGeneralChatMode = false;
+  isSettingsMode = false;
+  isFactCheckMode = true;
+  
+  const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
+  const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
+  
+  if (titleEl) titleEl.textContent = 'Fact Check';
+  if (chatContainer) chatContainer.style.display = 'none';
+  
+  // Show loading state with the tweet
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <div class="cognitia-fact-check-view">
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-1">
+          <div class="cognitia-sidebar-section-title">Original Tweet</div>
+          <div class="cognitia-fact-check-tweet">
+            <div class="cognitia-fact-check-tweet-text">${escapeHtml(tweetText)}</div>
+          </div>
+        </div>
+        
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-2">
+          <div class="cognitia-sidebar-section-title">Analysis</div>
+          <div class="cognitia-fact-check-results">
+            <div class="cognitia-loading">
+              <div class="cognitia-loading-spinner"></div>
+              <span>Analyzing claims...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  
+  sidebar.classList.add('open');
+  
+  // Fetch fact-check results
+  try {
+    const response = await chrome.runtime.sendMessage({
+      type: 'FACT_CHECK',
+      payload: { tweetText }
+    });
+    
+    const resultsEl = contentEl?.querySelector('.cognitia-fact-check-results');
+    
+    if (response.success && response.data) {
+      const { claims, message } = response.data;
+      
+      if (!claims || claims.length === 0) {
+        if (resultsEl) {
+          resultsEl.innerHTML = `
+            <div class="cognitia-fact-check-no-claims">
+              <div class="cognitia-fact-check-icon cognitia-fact-check-icon-info">?</div>
+              <p>${message || 'No verifiable factual claims found in this tweet.'}</p>
+            </div>
+          `;
+        }
+        return;
+      }
+      
+      if (resultsEl) {
+        resultsEl.innerHTML = claims.map((claim: any, index: number) => `
+          <div class="cognitia-fact-check-claim cognitia-reveal cognitia-reveal-${index + 1}">
+            <div class="cognitia-fact-check-verdict cognitia-verdict-${claim.verdict}">
+              <span class="cognitia-verdict-icon">${getVerdictIcon(claim.verdict)}</span>
+              <span class="cognitia-verdict-label">${getVerdictLabel(claim.verdict)}</span>
+            </div>
+            <div class="cognitia-fact-check-claim-text">"${escapeHtml(claim.claim)}"</div>
+            <div class="cognitia-fact-check-explanation">${escapeHtml(claim.explanation)}</div>
+            <div class="cognitia-fact-check-source ${claim.source.type}">
+              ${claim.source.type === 'grokipedia' 
+                ? `<a href="${claim.source.url}" target="_blank" class="cognitia-fact-check-source-link">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 16v-4"/>
+                      <path d="M12 8h.01"/>
+                    </svg>
+                    Source: Grokipedia
+                  </a>`
+                : `<div class="cognitia-fact-check-source-note">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <circle cx="12" cy="12" r="10"/>
+                      <path d="M12 8v4"/>
+                      <path d="M12 16h.01"/>
+                    </svg>
+                    ${escapeHtml(claim.source.note || 'Verified by Grok')}
+                  </div>`
+              }
+            </div>
+          </div>
+        `).join('');
+      }
+    } else {
+      if (resultsEl) {
+        resultsEl.innerHTML = `
+          <div class="cognitia-fact-check-error">
+            <p>Unable to analyze this tweet. Please try again.</p>
+          </div>
+        `;
+      }
+    }
+  } catch (error) {
+    console.error('[Cognitia] Fact check error:', error);
+    const resultsEl = contentEl?.querySelector('.cognitia-fact-check-results');
+    if (resultsEl) {
+      resultsEl.innerHTML = `
+        <div class="cognitia-fact-check-error">
+          <p>Unable to connect to fact-check service.</p>
+        </div>
+      `;
+    }
+  }
+}
 
+function getVerdictIcon(verdict: string): string {
+  switch (verdict) {
+    case 'true': return '✓';
+    case 'false': return '✗';
+    case 'partially-true': return '◐';
+    case 'unverifiable': return '?';
+    default: return '?';
+  }
+}
+
+function getVerdictLabel(verdict: string): string {
+  switch (verdict) {
+    case 'true': return 'TRUE';
+    case 'false': return 'FALSE';
+    case 'partially-true': return 'PARTIALLY TRUE';
+    case 'unverifiable': return 'UNVERIFIABLE';
+    default: return 'UNKNOWN';
+  }
+}

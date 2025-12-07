@@ -7,6 +7,7 @@ import { chatRoutes } from './api/chat.js';
 import { questionsRoutes } from './api/questions.js';
 import { crawlRoutes } from './api/crawl.js';
 import { schedulerRoutes } from './api/scheduler.js';
+import { factCheckRoutes } from './api/factCheck.js';
 import { initDatabase } from './index/database.js';
 import { initMatcher } from './matching/matcher.js';
 import { seedSampleTopics } from './crawler/index.js';
@@ -26,6 +27,7 @@ app.use('/api', chatRoutes);
 app.use('/api', questionsRoutes);
 app.use('/api', crawlRoutes);
 app.use('/api', schedulerRoutes);
+app.use('/api', factCheckRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
