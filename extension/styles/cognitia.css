@@ -1386,14 +1386,35 @@
   gap: 16px;
 }
 
-.cognitia-fact-check-claim {
-  background: var(--cog-glass);
-  border: 1px solid var(--cog-glass-border);
-  border-radius: 12px;
-  padding: 16px;
+.cognitia-fact-check-result-item {
   display: flex;
   flex-direction: column;
   gap: 12px;
+  padding: 16px;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 12px;
+}
+
+.cognitia-fact-check-verdict-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  width: fit-content;
+}
+
+.cognitia-fact-check-claim {
+  color: var(--cog-text-primary);
+  font-family: var(--cog-font-body);
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 12px;
+  background: var(--cog-surface);
+  border-radius: 8px;
 }
 
 .cognitia-fact-check-verdict {
@@ -1461,6 +1482,12 @@
   background: var(--cog-surface);
   border-radius: 8px;
   border-left: 3px solid var(--cog-ember-2);
+}
+
+.cognitia-fact-check-explanation p,
+.cognitia-fact-check-explanation div,
+.cognitia-fact-check-explanation span {
+  color: var(--cog-text-primary);
 }
 
 .cognitia-fact-check-source {
