@@ -1,73 +1,66 @@
 # Cognitia
 
-A Chrome extension that overlays on X.com, detecting Grokipedia topics in tweets and providing AI-powered summaries and chat via xAI's Grok API.
+A Chrome extension that enriches your X.com (Twitter) browsing experience by automatically detecting and highlighting topics with AI-powered summaries from Grokipedia.
 
 ## Features
 
-- **Topic Detection**: Automatically detects Grokipedia topics in tweets using Aho-Corasick pattern matching
-- **Visual Highlights**: Topics are underlined with a blue dotted line
-- **AI Summaries**: Hover over a topic to see a Grok-generated summary
-- **Sidebar Chat**: Click on a topic to open a sidebar with:
-  - Full summary
-  - Link to Grokipedia page
-  - Curated quick questions
-  - Free-text chat with Grok about the topic
+- **Automatic Topic Detection**: Highlights topics in tweets using an efficient Aho-Corasick matching algorithm
+- **AI-Powered Summaries**: Generates contextual summaries using xAI's Grok API
+- **Interactive Sidebar**: Click on highlighted topics to see full summaries, quick questions, and chat
+- **1,200+ Topics**: Pre-seeded with Wikipedia's Vital Articles and trending topics
+- **Continuous Discovery**: Automatically discovers and crawls new topics from Grokipedia
 
 ## Architecture
 
 ```
-extension/          # Chrome Extension (Manifest V3)
-  ├── src/
-  │   ├── content/  # Tweet ID extraction, highlighting, tooltips
-  │   ├── background/ # Service worker for API communication
-  │   ├── popup/    # Settings UI
-  │   └── sidebar/  # Chat sidebar (vanilla JS)
-  └── styles/       # CSS styles
-
-backend/            # Node.js Backend
-  ├── src/
-  │   ├── api/      # REST endpoints
-  │   ├── grok/     # xAI Grok API client (direct HTTP)
-  │   ├── xapi/     # X API v2 client
-  │   ├── index/    # SQLite FTS5 topic database
-  │   ├── matching/ # Aho-Corasick topic matcher
-  │   └── crawler/  # Grokipedia crawler integration
-  └── data/         # SQLite database
-
-shared/             # Shared TypeScript types
+┌─────────────────┐     ┌─────────────────┐     ┌─────────────────┐
+│  Chrome         │     │  Node.js        │     │  External APIs  │
+│  Extension      │────▶│  Backend        │────▶│  - xAI Grok     │
+│  (Content +     │     │  (Express +     │     │  - Grokipedia   │
+│   Background)   │     │   SQLite)       │     │                 │
+└─────────────────┘     └─────────────────┘     └─────────────────┘
 ```
 
 ## Setup
 
 ### Prerequisites
 
-- Node.js 20+
-- X API Bearer Token
-- xAI API Key
+- Node.js 18+
+- Python 3.9+
+- Chrome browser
+- xAI API key
 
-### Backend
+### Backend Setup
 
 ```bash
 cd backend
 npm install
 
-# Configure environment
+# Create .env file
 cp .env.example .env
-# Edit .env with your API keys:
-# XAI_API_KEY=your_xai_api_key
-# X_API_BEARER_TOKEN=your_x_api_token
+# Edit .env and add your xAI API key
 
-# Run development server
-npm run dev
-
-# Or build and run
+# Build and start
 npm run build
 npm start
 ```
 
 The backend runs on `http://localhost:3001` by default.
 
-### Extension
+### Seed Topics (Optional)
+
+To seed the database with 1,200+ topics from Wikipedia:
+
+```bash
+curl -X POST http://localhost:3001/api/scheduler/seed-parallel
+```
+
+Check progress:
+```bash
+curl http://localhost:3001/api/scheduler/parallel-status
+```
+
+### Extension Setup
 
 ```bash
 cd extension
@@ -75,36 +68,54 @@ npm install
 npm run build
 ```
 
-Then load the extension in Chrome:
-1. Go to `chrome://extensions`
-2. Enable "Developer mode"
+1. Open Chrome and navigate to `chrome://extensions/`
+2. Enable "Developer mode" (toggle in top right)
 3. Click "Load unpacked"
-4. Select the `extension/dist` folder
+4. Select the `extension` folder
 
-### Configuration
+### Configure Extension
 
-Click the Cognitia extension icon to configure:
-- **Backend URL**: Default is `http://localhost:3001`
-- **X API Token**: Optional if you want to use your own token
+1. Click the Cognitia extension icon
+2. Ensure "Enable Cognitia" is checked
+3. Backend URL should be `http://localhost:3001`
+
+## Usage
+
+1. Navigate to [x.com](https://x.com)
+2. Scroll through your feed
+3. Topics will be highlighted with blue dotted underlines
+4. **Hover** over a topic to see a quick summary tooltip
+5. **Click** on a topic to open the sidebar with:
+   - Full summary
+   - Quick questions
+   - Chat interface for follow-up questions
 
 ## API Endpoints
 
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/api/match` | POST | Match tweet IDs to topics |
-| `/api/summary` | POST | Generate topic summary |
-| `/api/chat` | POST | Chat about a topic |
-| `/api/questions` | POST | Generate quick questions |
-| `/health` | GET | Health check |
+### Topic Matching
+- `POST /api/match` - Match topics in tweet text
 
-## Grokipedia Data
+### Summaries & Chat
+- `POST /api/summary` - Get AI-generated summary for a topic
+- `POST /api/chat` - Chat with Grok about a topic
+- `POST /api/questions` - Get suggested questions for a topic
 
-The backend includes a sample seed of topics. To populate with full Grokipedia data:
-1. Use your Grokipedia crawler to extract topics
-2. Insert into the SQLite database using `insertTopic()` from `src/index/database.ts`
+### Crawler & Scheduler
+- `GET /api/scheduler/status` - Get scheduler status
+- `POST /api/scheduler/seed-parallel` - Start parallel seeding
+- `GET /api/scheduler/parallel-status` - Get seeding progress
+- `POST /api/scheduler/start` - Start hourly crawler
+- `POST /api/scheduler/stop` - Stop crawler
 
-## xAI API
+## Tech Stack
 
-Uses `grok-4-1-fast-non-reasoning-latest` model via direct HTTP calls to `https://api.x.ai/v1/chat/completions`.
+- **Extension**: TypeScript, Chrome Manifest V3
+- **Backend**: Node.js, Express, TypeScript
+- **Database**: SQLite with FTS5 full-text search
+- **AI**: xAI Grok API (grok-4-1-fast-non-reasoning-latest)
+- **Matching**: Aho-Corasick algorithm for multi-pattern matching
+- **Crawler**: Python + Node.js wrapper for Grokipedia extraction
 
-No SDK required - just a bearer token in the Authorization header.
+## License
+
+MIT

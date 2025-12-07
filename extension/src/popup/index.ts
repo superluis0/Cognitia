@@ -1,7 +1,6 @@
 interface Settings {
   enabled: boolean;
   backendUrl: string;
-  xApiToken?: string;
 }
 
 const DEFAULT_BACKEND_URL = 'http://localhost:3001';
@@ -15,17 +14,14 @@ async function loadSettings(): Promise<void> {
   
   const enabledEl = document.getElementById('enabled') as HTMLInputElement;
   const backendUrlEl = document.getElementById('backendUrl') as HTMLInputElement;
-  const xApiTokenEl = document.getElementById('xApiToken') as HTMLInputElement;
   
   enabledEl.checked = settings.enabled;
   backendUrlEl.value = settings.backendUrl || DEFAULT_BACKEND_URL;
-  xApiTokenEl.value = settings.xApiToken || '';
 }
 
 async function saveSettings(): Promise<void> {
   const enabledEl = document.getElementById('enabled') as HTMLInputElement;
   const backendUrlEl = document.getElementById('backendUrl') as HTMLInputElement;
-  const xApiTokenEl = document.getElementById('xApiToken') as HTMLInputElement;
   const saveBtn = document.getElementById('saveBtn') as HTMLButtonElement;
   const statusEl = document.getElementById('status') as HTMLElement;
   
@@ -34,8 +30,7 @@ async function saveSettings(): Promise<void> {
   
   const settings: Settings = {
     enabled: enabledEl.checked,
-    backendUrl: backendUrlEl.value.trim() || DEFAULT_BACKEND_URL,
-    xApiToken: xApiTokenEl.value.trim() || undefined
+    backendUrl: backendUrlEl.value.trim() || DEFAULT_BACKEND_URL
   };
   
   try {
