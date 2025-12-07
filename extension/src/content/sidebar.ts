@@ -8,6 +8,9 @@ import {
   getRecentTopics,
   getRecentChats,
   getRecentFactChecks,
+  getChatById,
+  getFactCheckById,
+  updateChatConversation,
   clearAllHistory,
   clearTopicHistory,
   clearChatHistory,
@@ -21,6 +24,7 @@ import {
 let sidebarElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
 let chatHistory: ChatMessage[] = [];
+let currentChatId: string | null = null;
 let isGeneralChatMode = false;
 let isSettingsMode = false;
 let isFactCheckMode = false;
@@ -234,14 +238,15 @@ async function sendChatMessage(): Promise<void> {
   input.disabled = true;
   sendBtn.disabled = true;
 
+  chatHistory.push({ role: 'user', content: message });
+  
   // Track first message in history
-  if (chatHistory.length === 0) {
+  if (chatHistory.length === 1) {
     const chatType = isGeneralChatMode ? 'general' : 'topic';
     const topicTitle = currentTopic?.title;
-    addChatToHistory(message, chatType, topicTitle);
+    const topicId = currentTopic?.id;
+    currentChatId = await addChatToHistory(message, chatType, chatHistory, topicTitle, topicId);
   }
-
-  chatHistory.push({ role: 'user', content: message });
   appendChatMessage(historyEl, 'user', message);
   
   const loadingEl = document.createElement('div');
@@ -277,6 +282,10 @@ async function sendChatMessage(): Promise<void> {
     if (response.success) {
       chatHistory.push({ role: 'assistant', content: response.data.response });
       appendChatMessage(historyEl, 'assistant', response.data.response);
+      // Update history with full conversation
+      if (currentChatId) {
+        await updateChatConversation(currentChatId, chatHistory);
+      }
     } else {
       appendChatMessage(historyEl, 'assistant', 'Sorry, I encountered an error. Please try again.');
     }
@@ -596,7 +605,7 @@ export async function openHistory(): Promise<void> {
 
           <div class="cognitia-history-content" data-content="chats" style="display: none;">
             ${chats.length > 0 ? chats.map((item, index) => `
-              <div class="cognitia-history-item">
+              <div class="cognitia-history-item" data-chat-id="${item.id}">
                 <div class="cognitia-history-item-title">${escapeHtml(item.firstMessage)}</div>
                 <div class="cognitia-history-item-meta">
                   <span class="cognitia-history-item-type">${item.chatType === 'general' ? 'General Chat' : `About: ${item.topicTitle}`}</span>
@@ -613,7 +622,7 @@ export async function openHistory(): Promise<void> {
 
           <div class="cognitia-history-content" data-content="fact-checks" style="display: none;">
             ${factChecks.length > 0 ? factChecks.map((item, index) => `
-              <div class="cognitia-history-item">
+              <div class="cognitia-history-item" data-factcheck-id="${item.id}">
                 <div class="cognitia-history-item-title">"${escapeHtml(item.tweetText)}"</div>
                 <div class="cognitia-history-item-meta">
                   <span class="cognitia-history-item-verdict cognitia-verdict-${item.verdictSummary}">
@@ -663,6 +672,34 @@ export async function openHistory(): Promise<void> {
         const topic = topics.find(t => t.topic.id === topicId)?.topic;
         if (topic) {
           openSidebar(topic);
+        }
+      });
+    });
+
+    // Chat click handlers
+    const chatItems = contentEl.querySelectorAll('[data-chat-id]');
+    chatItems.forEach(item => {
+      item.addEventListener('click', async () => {
+        const chatId = item.getAttribute('data-chat-id');
+        if (chatId) {
+          const chatItem = await getChatById(chatId);
+          if (chatItem) {
+            await restoreChatSession(chatItem);
+          }
+        }
+      });
+    });
+
+    // Fact-check click handlers
+    const factCheckItems = contentEl.querySelectorAll('[data-factcheck-id]');
+    factCheckItems.forEach(item => {
+      item.addEventListener('click', async () => {
+        const factCheckId = item.getAttribute('data-factcheck-id');
+        if (factCheckId) {
+          const factCheckItem = await getFactCheckById(factCheckId);
+          if (factCheckItem) {
+            await restoreFactCheckResults(factCheckItem);
+          }
         }
       });
     });
@@ -816,6 +853,103 @@ export async function openFactCheck(tweetText: string): Promise<void> {
       `;
     }
   }
+}
+
+async function restoreChatSession(chatItem: ChatHistoryItem): Promise<void> {
+  // Destroy existing sidebar and create fresh
+  if (sidebarElement) {
+    sidebarElement.remove();
+    sidebarElement = null;
+  }
+
+  const sidebar = createSidebar();
+  
+  // Restore chat state
+  chatHistory = chatItem.fullConversation || [];
+  currentChatId = chatItem.id;
+  
+  if (chatItem.chatType === 'general') {
+    isGeneralChatMode = true;
+  } else if (chatItem.topicId) {
+    // Would need to fetch the topic, for now just set the title
+    currentTopic = { id: chatItem.topicId, title: chatItem.topicTitle || '', url: '', summary: '' };
+  }
+
+  const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
+  const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const historyEl = sidebar.querySelector('.cognitia-chat-history') as HTMLElement;
+  const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
+
+  if (titleEl) titleEl.textContent = chatItem.chatType === 'general' ? 'Chat with Grok' : `Chat: ${chatItem.topicTitle}`;
+  if (chatContainer) chatContainer.style.display = 'flex';
+  if (contentEl) contentEl.style.display = 'block';
+
+  // Render full conversation history
+  if (historyEl) {
+    historyEl.innerHTML = '';
+    chatHistory.forEach(msg => {
+      appendChatMessage(historyEl, msg.role, msg.content);
+    });
+    historyEl.scrollTop = historyEl.scrollHeight;
+  }
+
+  sidebar.classList.add('open');
+}
+
+async function restoreFactCheckResults(factCheckItem: FactCheckHistoryItem): Promise<void> {
+  // Destroy existing sidebar and create fresh
+  if (sidebarElement) {
+    sidebarElement.remove();
+    sidebarElement = null;
+  }
+
+  const sidebar = createSidebar();
+  isFactCheckMode = true;
+
+  const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
+  const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
+
+  if (titleEl) titleEl.textContent = 'Fact-Check Result';
+  if (chatContainer) chatContainer.style.display = 'none';
+
+  if (contentEl) {
+    // Render the fact-check results
+    let resultHTML = `
+      <div class="cognitia-sidebar-section">
+        <div class="cognitia-history-item-title">Tweet:</div>
+        <p>"${escapeHtml(factCheckItem.tweetText)}"</p>
+      </div>
+      <div class="cognitia-sidebar-section">
+        <div class="cognitia-history-item-title">Verdict: ${getVerdictLabel(factCheckItem.verdictSummary)}</div>
+    `;
+
+    if (factCheckItem.fullResults && factCheckItem.fullResults.length > 0) {
+      resultHTML += '<div class="cognitia-fact-check-results">';
+      factCheckItem.fullResults.forEach(result => {
+        const verdictIcon = getVerdictIcon(result.verdict);
+        resultHTML += `
+          <div class="cognitia-fact-check-result-item">
+            <div class="cognitia-fact-check-verdict-badge cognitia-verdict-${result.verdict}">
+              ${verdictIcon} ${getVerdictLabel(result.verdict)}
+            </div>
+            <div class="cognitia-fact-check-claim">"${escapeHtml(result.claim)}"</div>
+            <div class="cognitia-fact-check-explanation">${sanitizeHtml(renderMarkdown(result.explanation))}</div>
+            ${result.source.type === 'grokipedia' && result.source.url ? 
+              `<a href="${result.source.url}" target="_blank" class="cognitia-source-link">📖 ${result.source.type}</a>` :
+              `<span class="cognitia-source-note">Source: ${result.source.type}</span>`
+            }
+          </div>
+        `;
+      });
+      resultHTML += '</div>';
+    }
+
+    resultHTML += '</div>';
+    contentEl.innerHTML = resultHTML;
+  }
+
+  sidebar.classList.add('open');
 }
 
 function getVerdictIcon(verdict: string): string {

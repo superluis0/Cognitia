@@ -28,18 +28,23 @@ export interface TopicHistoryItem {
 }
 
 export interface ChatHistoryItem {
+  id: string;
   firstMessage: string;
   timestamp: number;
   chatType: 'general' | 'topic';
   topicTitle?: string;
+  topicId?: number;
+  fullConversation: Array<{ role: 'user' | 'assistant'; content: string }>;
 }
 
 export interface FactCheckHistoryItem {
+  id: string;
   tweetText: string;
   claimsCount: number;
   verdictSummary: 'all-true' | 'mixed' | 'all-false' | 'unverifiable';
   timestamp: number;
   analyzedAt: string;
+  fullResults: ClaimResult[];
 }
 
 const MAX_TOPICS = 20;
@@ -116,19 +121,25 @@ export async function addTopicToHistory(topic: Topic): Promise<void> {
 export async function addChatToHistory(
   firstMessage: string,
   chatType: 'general' | 'topic',
-  topicTitle?: string
-): Promise<void> {
+  fullConversation: Array<{ role: 'user' | 'assistant'; content: string }>,
+  topicTitle?: string,
+  topicId?: number
+): Promise<string> {
   try {
     const result = await chrome.storage.local.get(['recentChats']);
     let chats: ChatHistoryItem[] = result.recentChats || [];
 
     // Add to front of array
     const timestamp = Date.now();
+    const chatId = `chat-${timestamp}-${Math.random().toString(36).substr(2, 9)}`;
     chats.unshift({
+      id: chatId,
       firstMessage: truncateText(firstMessage, 100),
       timestamp,
       chatType,
-      topicTitle
+      topicTitle,
+      topicId,
+      fullConversation
     });
 
     // Limit to max size
@@ -137,8 +148,10 @@ export async function addChatToHistory(
     }
 
     await chrome.storage.local.set({ recentChats: chats });
+    return chatId;
   } catch (error) {
     console.error('[Cognitia] Error adding chat to history:', error);
+    return '';
   }
 }
 
@@ -156,11 +169,13 @@ export async function addFactCheckToHistory(tweetText: string, claims: ClaimResu
     // Add to front of array
     const timestamp = Date.now();
     factChecks.unshift({
+      id: `factcheck-${timestamp}-${Math.random().toString(36).substr(2, 9)}`,
       tweetText: truncateText(tweetText, 100),
       claimsCount: claims.length,
       verdictSummary: calculateVerdictSummary(claims),
       timestamp,
-      analyzedAt: formatRelativeTime(timestamp)
+      analyzedAt: formatRelativeTime(timestamp),
+      fullResults: claims
     });
 
     // Limit to max size
@@ -256,6 +271,49 @@ export async function clearFactCheckHistory(): Promise<void> {
     await chrome.storage.local.set({ recentFactChecks: [] });
   } catch (error) {
     console.error('[Cognitia] Error clearing fact check history:', error);
+  }
+}
+
+// Get specific chat by ID
+export async function getChatById(chatId: string): Promise<ChatHistoryItem | null> {
+  try {
+    const result = await chrome.storage.local.get(['recentChats']);
+    const chats: ChatHistoryItem[] = result.recentChats || [];
+    return chats.find(chat => chat.id === chatId) || null;
+  } catch (error) {
+    console.error('[Cognitia] Error getting chat by ID:', error);
+    return null;
+  }
+}
+
+// Get specific fact-check by ID
+export async function getFactCheckById(factCheckId: string): Promise<FactCheckHistoryItem | null> {
+  try {
+    const result = await chrome.storage.local.get(['recentFactChecks']);
+    const factChecks: FactCheckHistoryItem[] = result.recentFactChecks || [];
+    return factChecks.find(fc => fc.id === factCheckId) || null;
+  } catch (error) {
+    console.error('[Cognitia] Error getting fact-check by ID:', error);
+    return null;
+  }
+}
+
+// Update chat conversation in history (for ongoing chats)
+export async function updateChatConversation(
+  chatId: string,
+  updatedConversation: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<void> {
+  try {
+    const result = await chrome.storage.local.get(['recentChats']);
+    let chats: ChatHistoryItem[] = result.recentChats || [];
+
+    const index = chats.findIndex(chat => chat.id === chatId);
+    if (index !== -1) {
+      chats[index].fullConversation = updatedConversation;
+      await chrome.storage.local.set({ recentChats: chats });
+    }
+  } catch (error) {
+    console.error('[Cognitia] Error updating chat conversation:', error);
   }
 }
 
