@@ -920,7 +920,12 @@ async function restoreChatSession(chatItem: ChatHistoryItem): Promise<void> {
     }
     if (linkEl && chatItem.topicUrl) {
       linkEl.href = chatItem.topicUrl;
-      linkEl.style.display = 'block';
+    }
+  } else {
+    // Hide link for general chats
+    const linkSection = linkEl?.parentElement;
+    if (linkSection) {
+      linkSection.style.display = 'none';
     }
   }
 
