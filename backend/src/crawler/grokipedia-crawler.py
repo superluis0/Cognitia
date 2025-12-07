@@ -41,8 +41,11 @@ def extract_internal_links(html: str) -> list:
     # Clean and deduplicate
     cleaned = []
     for match in matches:
-        # Remove trailing backslashes and other escape characters
+        # Remove trailing backslashes
         slug = match.rstrip('\\').strip()
+        # Remove unmatched trailing parentheses (but keep balanced ones like in "XAI_(company)")
+        while slug.endswith(')') and slug.count('(') < slug.count(')'):
+            slug = slug[:-1]
         if slug and slug not in cleaned:
             cleaned.append(slug)
     

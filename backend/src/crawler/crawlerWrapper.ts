@@ -68,12 +68,28 @@ export async function crawlPage(url: string): Promise<CrawlResult> {
       const summary = extractSummary(markdownContent);
       
       // Add discovered links to the queue
-      discoveredLinks.forEach(link => {
-        const linkUrl = `https://grokipedia.com/page/${link}`;
+      const newLinks: string[] = [];
+      discoveredLinks.forEach((link: any) => {
+        // Handle both string slugs and rich link objects
+        let slug: string;
+        if (typeof link === 'string') {
+          slug = link;
+        } else if (typeof link === 'object' && link.slug) {
+          // Extract slug from link object (handle anchors like "Truth#truth-seeking-behaviors")
+          slug = link.slug.split('#')[0];
+        } else {
+          return;
+        }
+        
+        const linkUrl = `https://grokipedia.com/page/${slug}`;
         if (!crawledUrls.has(linkUrl)) {
-          discoveryQueue.add(link);
+          discoveryQueue.add(slug);
+          newLinks.push(slug);
         }
       });
+      if (newLinks.length > 0) {
+        console.log(`[Crawler] Discovered ${newLinks.length} new topics from ${title}: ${newLinks.slice(0, 5).join(', ')}${newLinks.length > 5 ? '...' : ''}`);
+      }
       
       crawledUrls.add(url);
       
