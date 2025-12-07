@@ -91,7 +91,7 @@ export function createSidebar(): HTMLElement {
     </div>
     <div class="cognitia-chat-container cognitia-reveal cognitia-reveal-5">
       <div class="cognitia-chat-input-wrapper">
-        <input type="text" class="cognitia-chat-input" placeholder="Ask about this topic..." />
+        <textarea class="cognitia-chat-input" placeholder="Ask about this topic..." rows="1"></textarea>
         <button class="cognitia-chat-send">Send</button>
       </div>
     </div>
@@ -105,13 +105,31 @@ export function createSidebar(): HTMLElement {
     openSettings();
   });
   
-  const chatInput = sidebarElement.querySelector('.cognitia-chat-input') as HTMLInputElement;
+  const chatInput = sidebarElement.querySelector('.cognitia-chat-input') as HTMLTextAreaElement;
   const sendBtn = sidebarElement.querySelector('.cognitia-chat-send');
+  
+  // Auto-expand textarea as user types
+  const autoExpandTextarea = () => {
+    if (chatInput) {
+      chatInput.style.height = 'auto';
+      const newHeight = Math.min(chatInput.scrollHeight, 150); // Max 150px height
+      chatInput.style.height = newHeight + 'px';
+    }
+  };
+  
+  chatInput?.addEventListener('input', autoExpandTextarea);
   
   chatInput?.addEventListener('keypress', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendChatMessage();
+      // Reset textarea after sending
+      setTimeout(() => {
+        if (chatInput) {
+          chatInput.style.height = 'auto';
+          chatInput.value = '';
+        }
+      }, 0);
     }
   });
   
@@ -186,7 +204,7 @@ async function loadQuickQuestions(topic: Topic, container: HTMLElement): Promise
       container.querySelectorAll('.cognitia-quick-question').forEach((btn) => {
         btn.addEventListener('click', () => {
           const question = btn.textContent || '';
-          const input = sidebarElement?.querySelector('.cognitia-chat-input') as HTMLInputElement;
+          const input = sidebarElement?.querySelector('.cognitia-chat-input') as HTMLTextAreaElement;
           if (input) {
             input.value = question;
             sendChatMessage();
@@ -205,7 +223,7 @@ async function sendChatMessage(): Promise<void> {
   if (!sidebarElement) return;
   if (!isGeneralChatMode && !currentTopic) return;
   
-  const input = sidebarElement.querySelector('.cognitia-chat-input') as HTMLInputElement;
+  const input = sidebarElement.querySelector('.cognitia-chat-input') as HTMLTextAreaElement;
   const sendBtn = sidebarElement.querySelector('.cognitia-chat-send') as HTMLButtonElement;
   const historyEl = sidebarElement.querySelector('.cognitia-chat-history') as HTMLElement;
   
@@ -316,7 +334,7 @@ export async function openGeneralChat(): Promise<void> {
   
   const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
   const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
-  const inputEl = sidebar.querySelector('.cognitia-chat-input') as HTMLInputElement;
+  const inputEl = sidebar.querySelector('.cognitia-chat-input') as HTMLTextAreaElement;
   
   if (titleEl) titleEl.textContent = 'Chat with Grok';
   

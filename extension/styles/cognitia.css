@@ -462,6 +462,13 @@
   font-size: 14px;
   outline: none;
   transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  resize: none;
+  min-height: 44px;
+  max-height: 150px;
+  overflow-y: auto;
+  line-height: 1.5;
+  word-wrap: break-word;
+  white-space: pre-wrap;
 }
 
 .cognitia-chat-input:focus {
