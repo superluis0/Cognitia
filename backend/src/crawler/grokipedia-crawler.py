@@ -10,6 +10,7 @@ Example:
 """
 
 import argparse
+import json
 import re
 import sys
 import requests
@@ -26,6 +27,20 @@ def fetch_page(url: str) -> str:
     response = requests.get(url, headers=headers, timeout=30)
     response.raise_for_status()
     return response.text
+
+
+def extract_internal_links(html: str) -> list:
+    """
+    Extract all internal Grokipedia page links from the HTML.
+    Returns a list of topic names (e.g., ['Elon_Musk', 'Tesla', ...])
+    """
+    # Find all grokipedia.com/page/ links
+    pattern = r'https://grokipedia\.com/page/([^"\s\)]+)'
+    matches = re.findall(pattern, html)
+    
+    # Deduplicate and clean
+    unique_topics = list(set(matches))
+    return unique_topics
 
 
 def extract_markdown_content(html: str) -> str:
@@ -118,6 +133,11 @@ def main():
         help="Keep markdown formatting (default: convert to plaintext)",
         action="store_true"
     )
+    parser.add_argument(
+        "--json",
+        help="Output as JSON with content and discovered links",
+        action="store_true"
+    )
     
     args = parser.parse_args()
     
@@ -131,6 +151,7 @@ def main():
         
         print("Extracting article content...", file=sys.stderr)
         content = extract_markdown_content(html)
+        links = extract_internal_links(html)
         
         if not content:
             print("Error: Could not extract article content.", file=sys.stderr)
@@ -139,12 +160,20 @@ def main():
         if not args.markdown:
             content = markdown_to_plaintext(content)
         
+        if args.json:
+            output = json.dumps({
+                "content": content,
+                "links": links
+            })
+        else:
+            output = content
+        
         if args.output:
             with open(args.output, "w", encoding="utf-8") as f:
-                f.write(content)
+                f.write(output)
             print(f"Saved to: {args.output}", file=sys.stderr)
         else:
-            print(content)
+            print(output)
             
     except requests.exceptions.RequestException as e:
         print(f"Error fetching page: {e}", file=sys.stderr)

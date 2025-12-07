@@ -11,14 +11,19 @@ interface CrawlResult {
   url: string;
   content: string;
   summary: string;
+  discoveredLinks: string[];
 }
+
+// Queue of discovered topics to crawl
+const discoveryQueue: Set<string> = new Set();
+const crawledUrls: Set<string> = new Set();
 
 /**
  * Crawl a Grokipedia page and extract its content
  */
 export async function crawlPage(url: string): Promise<CrawlResult> {
   return new Promise((resolve, reject) => {
-    const python = spawn('python3', [CRAWLER_PATH, url, '--markdown']);
+    const python = spawn('python3', [CRAWLER_PATH, url, '--markdown', '--json']);
     
     let stdout = '';
     let stderr = '';
@@ -43,18 +48,41 @@ export async function crawlPage(url: string): Promise<CrawlResult> {
         return;
       }
       
+      // Try to parse as JSON (if --json flag worked)
+      let discoveredLinks: string[] = [];
+      let markdownContent = content;
+      
+      try {
+        const jsonData = JSON.parse(content);
+        markdownContent = jsonData.content || content;
+        discoveredLinks = jsonData.links || [];
+      } catch {
+        // Not JSON, just markdown content
+      }
+      
       // Extract title from first markdown header
-      const titleMatch = content.match(/^#\s+(.+)$/m);
+      const titleMatch = markdownContent.match(/^#\s+(.+)$/m);
       const title = titleMatch ? titleMatch[1].trim() : extractTitleFromUrl(url);
       
       // Generate summary from first paragraph (after title)
-      const summary = extractSummary(content);
+      const summary = extractSummary(markdownContent);
+      
+      // Add discovered links to the queue
+      discoveredLinks.forEach(link => {
+        const linkUrl = `https://grokipedia.com/page/${link}`;
+        if (!crawledUrls.has(linkUrl)) {
+          discoveryQueue.add(link);
+        }
+      });
+      
+      crawledUrls.add(url);
       
       resolve({
         title,
         url,
-        content,
-        summary
+        content: markdownContent,
+        summary,
+        discoveredLinks
       });
     });
     
@@ -62,6 +90,31 @@ export async function crawlPage(url: string): Promise<CrawlResult> {
       reject(new Error(`Failed to spawn crawler: ${err.message}`));
     });
   });
+}
+
+/**
+ * Get topics discovered from crawled pages but not yet crawled
+ */
+export function getDiscoveryQueue(): string[] {
+  return Array.from(discoveryQueue);
+}
+
+/**
+ * Get count of discovered topics
+ */
+export function getDiscoveryQueueSize(): number {
+  return discoveryQueue.size;
+}
+
+/**
+ * Pop a topic from the discovery queue
+ */
+export function popFromDiscoveryQueue(): string | undefined {
+  const first = discoveryQueue.values().next().value;
+  if (first) {
+    discoveryQueue.delete(first);
+  }
+  return first;
 }
 
 /**

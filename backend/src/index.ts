@@ -6,9 +6,11 @@ import { summaryRoutes } from './api/summary.js';
 import { chatRoutes } from './api/chat.js';
 import { questionsRoutes } from './api/questions.js';
 import { crawlRoutes } from './api/crawl.js';
+import { schedulerRoutes } from './api/scheduler.js';
 import { initDatabase } from './index/database.js';
 import { initMatcher } from './matching/matcher.js';
 import { seedSampleTopics } from './crawler/index.js';
+import { startScheduler } from './crawler/scheduler.js';
 
 dotenv.config();
 
@@ -23,6 +25,7 @@ app.use('/api', summaryRoutes);
 app.use('/api', chatRoutes);
 app.use('/api', questionsRoutes);
 app.use('/api', crawlRoutes);
+app.use('/api', schedulerRoutes);
 
 app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
@@ -40,6 +43,12 @@ async function start(): Promise<void> {
     
     app.listen(PORT, () => {
       console.log(`[Cognitia] Backend running on http://localhost:${PORT}`);
+      
+      // Auto-start scheduler if AUTO_CRAWL is enabled
+      if (process.env.AUTO_CRAWL === 'true') {
+        const intervalMinutes = parseInt(process.env.CRAWL_INTERVAL_MINUTES || '60', 10);
+        startScheduler({ intervalMs: intervalMinutes * 60 * 1000 });
+      }
     });
   } catch (error) {
     console.error('[Cognitia] Failed to start:', error);
