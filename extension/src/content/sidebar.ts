@@ -29,6 +29,7 @@ let currentChatId: string | null = null;
 let isGeneralChatMode = false;
 let isSettingsMode = false;
 let isFactCheckMode = false;
+let previousView: 'settings' | 'history' | null = null;
 
 export function createSidebar(): HTMLElement {
   if (sidebarElement) {
@@ -107,7 +108,11 @@ export function createSidebar(): HTMLElement {
   
   const homeBtn = sidebarElement.querySelector('.cognitia-sidebar-home');
   homeBtn?.addEventListener('click', () => {
-    openSettings();
+    if (previousView === 'history') {
+      openHistory();
+    } else {
+      openSettings();
+    }
   });
   
   const chatInput = sidebarElement.querySelector('.cognitia-chat-input') as HTMLTextAreaElement;
@@ -144,6 +149,18 @@ export function createSidebar(): HTMLElement {
   return sidebarElement;
 }
 
+function updateHomeButtonTitle(): void {
+  if (!sidebarElement) return;
+  const homeBtn = sidebarElement.querySelector('.cognitia-sidebar-home');
+  if (homeBtn) {
+    if (previousView === 'history') {
+      homeBtn.setAttribute('title', 'Back to History');
+    } else {
+      homeBtn.setAttribute('title', 'Back to X');
+    }
+  }
+}
+
 export async function openSidebar(topic: Topic): Promise<void> {
   // Always destroy existing sidebar and create fresh
   if (sidebarElement) {
@@ -172,6 +189,9 @@ export async function openSidebar(topic: Topic): Promise<void> {
 
   // Track topic view in history
   addTopicToHistory(topic);
+
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
 
   loadSummary(topic, summaryEl);
   loadQuickQuestions(topic, questionsEl);
@@ -363,7 +383,10 @@ export async function openGeneralChat(): Promise<void> {
   }
   
   if (inputEl) inputEl.placeholder = 'Ask Grok anything...';
-  
+
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
+
   sidebar.classList.add('open');
 }
 
@@ -393,12 +416,13 @@ export async function openSettings(): Promise<void> {
     sidebarElement.remove();
     sidebarElement = null;
   }
-  
+
   const sidebar = createSidebar();
   currentTopic = null;
   chatHistory = [];
   isGeneralChatMode = false;
   isSettingsMode = true;
+  previousView = null;
   
   const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
   const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
@@ -559,6 +583,9 @@ export async function openSettings(): Promise<void> {
     });
   }
 
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
+
   sidebar.classList.add('open');
 }
 
@@ -575,6 +602,10 @@ export async function openHistory(): Promise<void> {
   isGeneralChatMode = false;
   isSettingsMode = false;
   isFactCheckMode = false;
+  // Track that we came from settings (unless we were already in history)
+  if (previousView !== 'history') {
+    previousView = 'settings';
+  }
 
   const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
   const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
@@ -684,6 +715,7 @@ export async function openHistory(): Promise<void> {
         const topicId = parseInt(item.getAttribute('data-topic-id') || '0');
         const topic = topics.find(t => t.topic.id === topicId)?.topic;
         if (topic) {
+          previousView = 'history';
           openSidebar(topic);
         }
       });
@@ -697,6 +729,7 @@ export async function openHistory(): Promise<void> {
         if (chatId) {
           const chatItem = await getChatById(chatId);
           if (chatItem) {
+            previousView = 'history';
             await restoreChatSession(chatItem);
           }
         }
@@ -711,6 +744,7 @@ export async function openHistory(): Promise<void> {
         if (factCheckId) {
           const factCheckItem = await getFactCheckById(factCheckId);
           if (factCheckItem) {
+            previousView = 'history';
             await restoreFactCheckResults(factCheckItem);
           }
         }
@@ -736,6 +770,9 @@ export async function openHistory(): Promise<void> {
       });
     });
   }
+
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
 
   sidebar.classList.add('open');
 }
@@ -784,9 +821,12 @@ export async function openFactCheck(tweetText: string, tweetId?: string): Promis
       </div>
     `;
   }
-  
+
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
+
   sidebar.classList.add('open');
-  
+
   // Fetch fact-check results
   try {
     const response = await chrome.runtime.sendMessage({
@@ -938,6 +978,9 @@ async function restoreChatSession(chatItem: ChatHistoryItem): Promise<void> {
     historyEl.scrollTop = historyEl.scrollHeight;
   }
 
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
+
   sidebar.classList.add('open');
 }
 
@@ -1028,6 +1071,9 @@ async function restoreFactCheckResults(factCheckItem: FactCheckHistoryItem): Pro
 
     contentEl.innerHTML = resultHTML;
   }
+
+  // Update home button title based on navigation context
+  updateHomeButtonTitle();
 
   sidebar.classList.add('open');
 }

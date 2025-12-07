@@ -134,27 +134,27 @@ class AhoCorasickMatcher {
   
   private filterOverlappingMatches(matches: TopicMatch[]): TopicMatch[] {
     if (matches.length <= 1) return matches;
-    
+
     matches.sort((a, b) => {
       if (a.startIndex !== b.startIndex) {
         return a.startIndex - b.startIndex;
       }
       return (b.endIndex - b.startIndex) - (a.endIndex - a.startIndex);
     });
-    
+
     const filtered: TopicMatch[] = [];
     let lastEnd = -1;
-    
+
     for (const match of matches) {
       if (match.startIndex >= lastEnd) {
         filtered.push(match);
         lastEnd = match.endIndex;
-      } else if (match.endIndex - match.startIndex > lastEnd - filtered[filtered.length - 1].startIndex) {
+      } else if (filtered.length > 0 && match.endIndex - match.startIndex > lastEnd - filtered[filtered.length - 1].startIndex) {
         filtered[filtered.length - 1] = match;
         lastEnd = match.endIndex;
       }
     }
-    
+
     return filtered;
   }
 }

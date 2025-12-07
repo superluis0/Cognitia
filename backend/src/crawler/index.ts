@@ -98,9 +98,106 @@ export async function seedSampleTopics(): Promise<void> {
       url: 'https://grokipedia.com/page/Ethereum',
       summary: 'Ethereum is a decentralized blockchain platform.',
       aliases: ['ETH']
+    },
+    // Additional popular topics that should be available immediately
+    {
+      title: 'NFT',
+      url: 'https://grokipedia.com/page/NFT',
+      summary: 'NFTs are unique digital assets verified using blockchain technology.',
+      aliases: ['Non-Fungible Token', 'Non-Fungible Tokens']
+    },
+    {
+      title: 'NFL',
+      url: 'https://grokipedia.com/page/NFL',
+      summary: 'The National Football League is a professional American football league.',
+      aliases: ['National Football League']
+    },
+    {
+      title: 'NBA',
+      url: 'https://grokipedia.com/page/NBA',
+      summary: 'The National Basketball Association is a professional basketball league.',
+      aliases: ['National Basketball Association']
+    },
+    {
+      title: 'UFC',
+      url: 'https://grokipedia.com/page/UFC',
+      summary: 'The Ultimate Fighting Championship is a mixed martial arts promotion.',
+      aliases: ['Ultimate Fighting Championship', 'MMA']
+    },
+    {
+      title: 'Classical physics',
+      url: 'https://grokipedia.com/page/Classical_physics',
+      summary: 'Classical physics describes physics before modern quantum and relativity theories.',
+      aliases: ['Classical Physics', 'Newtonian Physics']
+    },
+    {
+      title: 'Threads',
+      url: 'https://grokipedia.com/page/Threads_(social_network)',
+      summary: 'Threads is a social media platform developed by Meta.',
+      aliases: ['Threads App']
+    },
+    {
+      title: 'Discord',
+      url: 'https://grokipedia.com/page/Discord',
+      summary: 'Discord is a communication platform for communities and gaming.',
+      aliases: []
+    },
+    {
+      title: 'Twitch',
+      url: 'https://grokipedia.com/page/Twitch',
+      summary: 'Twitch is a live streaming platform focused on gaming and entertainment.',
+      aliases: ['Twitch.tv']
+    },
+    {
+      title: 'Wall Street',
+      url: 'https://grokipedia.com/page/Wall_Street',
+      summary: 'Wall Street is the financial district of New York City.',
+      aliases: []
+    },
+    {
+      title: 'Pharmacology',
+      url: 'https://grokipedia.com/page/Pharmacology',
+      summary: 'Pharmacology is the science of drugs and their effects on living systems.',
+      aliases: []
+    },
+    {
+      title: 'Hippocratic Oath',
+      url: 'https://grokipedia.com/page/Hippocratic_Oath',
+      summary: 'The Hippocratic Oath is an ethical code for physicians.',
+      aliases: []
+    },
+    {
+      title: 'Egyptian',
+      url: 'https://grokipedia.com/page/Egyptian',
+      summary: 'Egyptian refers to the people, culture, and civilization of Egypt.',
+      aliases: ['Ancient Egyptian', 'Egypt']
+    },
+    {
+      title: 'Middle English',
+      url: 'https://grokipedia.com/page/Middle_English',
+      summary: 'Middle English is the form of English spoken from 1150 to 1500.',
+      aliases: []
+    },
+    {
+      title: 'World Cup',
+      url: 'https://grokipedia.com/page/World_Cup',
+      summary: 'The FIFA World Cup is the premier international football tournament.',
+      aliases: ['FIFA World Cup', 'Football World Cup']
+    },
+    {
+      title: 'Olympics',
+      url: 'https://grokipedia.com/page/Olympics',
+      summary: 'The Olympic Games are international sporting events held every four years.',
+      aliases: ['Olympic Games', 'Summer Olympics', 'Winter Olympics']
+    },
+    {
+      title: 'Academy Awards',
+      url: 'https://grokipedia.com/page/Academy_Awards',
+      summary: 'The Academy Awards are annual awards for artistic and technical merit in film.',
+      aliases: ['Oscars', 'The Oscars']
     }
   ];
-  
+
   console.log('[Crawler] Seeding sample topics...');
   
   for (const topic of sampleTopics) {
