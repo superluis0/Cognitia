@@ -44,11 +44,10 @@ async function start(): Promise<void> {
     app.listen(PORT, () => {
       console.log(`[Cognitia] Backend running on http://localhost:${PORT}`);
       
-      // Auto-start scheduler if AUTO_CRAWL is enabled
-      if (process.env.AUTO_CRAWL === 'true') {
-        const intervalMinutes = parseInt(process.env.CRAWL_INTERVAL_MINUTES || '60', 10);
-        startScheduler({ intervalMs: intervalMinutes * 60 * 1000 });
-      }
+      // Auto-start crawler scheduler
+      const intervalMinutes = parseInt(process.env.CRAWL_INTERVAL_MINUTES || '60', 10);
+      startScheduler({ intervalMs: intervalMinutes * 60 * 1000 });
+      console.log(`[Cognitia] Crawler scheduler started (interval: ${intervalMinutes} minutes)`);
     });
   } catch (error) {
     console.error('[Cognitia] Failed to start:', error);

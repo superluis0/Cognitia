@@ -87,7 +87,7 @@ export async function chat(
     body: JSON.stringify({
       model: 'grok-4-1-fast-non-reasoning-latest',
       messages,
-      max_tokens: 500,
+      max_tokens: 2000,
       temperature: 0.7
     })
   });
@@ -129,7 +129,7 @@ export async function generalChat(
     body: JSON.stringify({
       model: 'grok-4-1-fast-reasoning-latest',
       messages,
-      max_tokens: 1000,
+      max_tokens: 4000,
       temperature: 0.7
     })
   });

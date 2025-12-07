@@ -1,10 +1,11 @@
 import { observeTweets, observeScroll, getVisibleTweetIds } from './tweetIdExtractor';
-import { highlightMatches, isProcessed, setHighlightStyle } from './highlighter';
+import { highlightMatches, isProcessed, setHighlightStyle, clearHighlights } from './highlighter';
 import { createTooltip } from './tooltip';
 import { createSidebar } from './sidebar';
 import type { TweetWithMatches } from '../../../shared/types';
 
 const processedTweetIds = new Set<string>();
+const REFRESH_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
 
 async function loadHighlightStyle(): Promise<void> {
   try {
@@ -102,7 +103,20 @@ async function init(): Promise<void> {
     }
   }, 1000);
   
-  console.log('[Cognitia] Initialized successfully');
+  // Auto-refresh every 5 minutes to pick up newly crawled topics
+  setInterval(() => {
+    console.log('[Cognitia] Auto-refreshing to check for new topics...');
+    // Clear processed caches
+    processedTweetIds.clear();
+    clearHighlights();
+    // Re-scan visible tweets
+    const visibleIds = getVisibleTweetIds();
+    if (visibleIds.length > 0) {
+      processNewTweets(visibleIds);
+    }
+  }, REFRESH_INTERVAL_MS);
+  
+  console.log('[Cognitia] Initialized successfully (auto-refresh every 5 minutes)');
 }
 
 if (document.readyState === 'loading') {

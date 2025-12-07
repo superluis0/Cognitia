@@ -42,8 +42,25 @@ export function highlightMatches(tweetId: string, matches: TopicMatch[]): void {
 }
 
 function applyHighlights(textElement: HTMLElement, matches: TopicMatch[]): void {
+  // Use text search instead of indices since X API text may differ from DOM text
+  const highlightedTerms = new Set<string>();
+  
+  for (const match of matches) {
+    const { topic, matchedText } = match;
+    const termLower = matchedText.toLowerCase();
+    
+    // Skip if we've already highlighted this term
+    if (highlightedTerms.has(termLower)) continue;
+    highlightedTerms.add(termLower);
+    
+    // Find and highlight the term in the DOM
+    highlightTermInElement(textElement, matchedText, topic);
+  }
+}
+
+function highlightTermInElement(element: HTMLElement, term: string, topic: Topic): void {
   const walker = document.createTreeWalker(
-    textElement,
+    element,
     NodeFilter.SHOW_TEXT,
     null
   );
@@ -54,28 +71,28 @@ function applyHighlights(textElement: HTMLElement, matches: TopicMatch[]): void 
     textNodes.push(node);
   }
   
-  let fullText = '';
-  const nodeOffsets: Array<{ node: Text; start: number; end: number }> = [];
+  const termLower = term.toLowerCase();
   
-  textNodes.forEach((textNode) => {
-    const start = fullText.length;
-    fullText += textNode.textContent || '';
-    nodeOffsets.push({ node: textNode, start, end: fullText.length });
-  });
-  
-  for (const match of matches) {
-    const { startIndex, endIndex, topic } = match;
+  for (const textNode of textNodes) {
+    const text = textNode.textContent || '';
+    const textLower = text.toLowerCase();
+    const index = textLower.indexOf(termLower);
     
-    for (const { node, start, end } of nodeOffsets) {
-      if (startIndex >= start && endIndex <= end) {
-        const localStart = startIndex - start;
-        const localEnd = endIndex - start;
-        
-        wrapTextWithHighlight(node, localStart, localEnd, topic);
-        break;
+    if (index !== -1) {
+      // Check word boundaries
+      const before = index > 0 ? textLower[index - 1] : ' ';
+      const after = index + term.length < text.length ? textLower[index + term.length] : ' ';
+      
+      if (isWordBoundaryChar(before) && isWordBoundaryChar(after)) {
+        wrapTextWithHighlight(textNode, index, index + term.length, topic);
+        return; // Only highlight first occurrence
       }
     }
   }
+}
+
+function isWordBoundaryChar(char: string): boolean {
+  return /[\s.,!?;:'"()\[\]{}<>\/\-—–]/.test(char) || char === '';
 }
 
 function wrapTextWithHighlight(

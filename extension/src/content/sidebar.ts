@@ -1,10 +1,12 @@
 import type { Topic, ChatMessage } from '../../../shared/types';
 import { renderMarkdown, sanitizeHtml } from './markdown';
+import { setHighlightStyle, clearHighlights } from './highlighter';
 
 let sidebarElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
 let chatHistory: ChatMessage[] = [];
 let isGeneralChatMode = false;
+let isSettingsMode = false;
 
 export function createSidebar(): HTMLElement {
   if (sidebarElement) {
@@ -16,12 +18,20 @@ export function createSidebar(): HTMLElement {
   sidebarElement.innerHTML = `
     <div class="cognitia-sidebar-header">
       <span class="cognitia-sidebar-title"></span>
-      <button class="cognitia-sidebar-close">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/>
-          <line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>
+      <div class="cognitia-sidebar-header-actions">
+        <button class="cognitia-sidebar-home" title="Back to X">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+            <polyline points="9 22 9 12 15 12 15 22"/>
+          </svg>
+        </button>
+        <button class="cognitia-sidebar-close" title="Close">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
     </div>
     <div class="cognitia-sidebar-content">
       <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-1">
@@ -72,6 +82,11 @@ export function createSidebar(): HTMLElement {
   
   const closeBtn = sidebarElement.querySelector('.cognitia-sidebar-close');
   closeBtn?.addEventListener('click', closeSidebar);
+  
+  const homeBtn = sidebarElement.querySelector('.cognitia-sidebar-home');
+  homeBtn?.addEventListener('click', () => {
+    openSettings();
+  });
   
   const chatInput = sidebarElement.querySelector('.cognitia-chat-input') as HTMLInputElement;
   const sendBtn = sidebarElement.querySelector('.cognitia-chat-send');
@@ -247,15 +262,12 @@ function appendChatMessage(container: HTMLElement, role: 'user' | 'assistant', c
 export function closeSidebar(): void {
   if (sidebarElement) {
     sidebarElement.classList.remove('open');
-    // Destroy after animation completes
+    // Destroy immediately to avoid race conditions with reopening
     const elementToRemove = sidebarElement;
+    sidebarElement = null;
+    // Remove from DOM after animation
     setTimeout(() => {
-      if (elementToRemove && !elementToRemove.classList.contains('open')) {
-        elementToRemove.remove();
-        if (sidebarElement === elementToRemove) {
-          sidebarElement = null;
-        }
-      }
+      elementToRemove.remove();
     }, 400);
   }
   currentTopic = null;
@@ -315,3 +327,145 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
   return true;
 });
+
+export async function openSettings(): Promise<void> {
+  // Always destroy existing sidebar and create fresh
+  if (sidebarElement) {
+    sidebarElement.remove();
+    sidebarElement = null;
+  }
+  
+  const sidebar = createSidebar();
+  currentTopic = null;
+  chatHistory = [];
+  isGeneralChatMode = false;
+  isSettingsMode = true;
+  
+  const titleEl = sidebar.querySelector('.cognitia-sidebar-title') as HTMLElement;
+  const contentEl = sidebar.querySelector('.cognitia-sidebar-content') as HTMLElement;
+  const chatContainer = sidebar.querySelector('.cognitia-chat-container') as HTMLElement;
+  
+  if (titleEl) titleEl.textContent = 'Cognitia Settings';
+  if (chatContainer) chatContainer.style.display = 'none';
+  
+  // Load current settings
+  let currentStyle = 'dotted';
+  let enabled = true;
+  try {
+    const result = await chrome.storage.sync.get(['cognitiaSettings']);
+    const settings = result.cognitiaSettings || {};
+    currentStyle = settings.highlightStyle || 'dotted';
+    enabled = settings.enabled !== false;
+  } catch (e) {
+    console.error('[Cognitia] Error loading settings:', e);
+  }
+  
+  const styles = [
+    { id: 'dotted', label: 'Dotted' },
+    { id: 'solid', label: 'Solid' },
+    { id: 'dashed', label: 'Dashed' },
+    { id: 'wavy', label: 'Wavy' },
+    { id: 'tint', label: 'Tint' },
+    { id: 'tint-dotted', label: 'Combo' },
+    { id: 'colored', label: 'Color' }
+  ];
+  
+  if (contentEl) {
+    contentEl.innerHTML = `
+      <div class="cognitia-settings-view">
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-1">
+          <div class="cognitia-settings-card">
+            <div class="cognitia-settings-row">
+              <span class="cognitia-settings-label">Enable Cognitia</span>
+              <label class="cognitia-toggle">
+                <input type="checkbox" id="cognitia-enabled-toggle" ${enabled ? 'checked' : ''}>
+                <span class="cognitia-toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+        
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-2">
+          <div class="cognitia-sidebar-section-title">Highlight Style</div>
+          <div class="cognitia-style-swatches">
+            ${styles.map(s => `
+              <div class="cognitia-style-swatch ${s.id === currentStyle ? 'active' : ''}" data-style="${s.id}">
+                <div class="cognitia-swatch-preview ${s.id}">${s.id === 'colored' ? 'Aa' : ''}</div>
+                <span class="cognitia-swatch-label">${s.label}</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+        
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-3">
+          <div class="cognitia-sidebar-section-title">Preview</div>
+          <div class="cognitia-preview-box">
+            Learn about <span class="cognitia-preview-highlight ${currentStyle}">SpaceX</span> and other topics.
+          </div>
+        </div>
+        
+        <div class="cognitia-sidebar-section cognitia-reveal cognitia-reveal-4">
+          <button class="cognitia-btn cognitia-btn-ember" id="cognitia-chat-grok-btn">
+            <span>✨</span> Chat with Grok
+          </button>
+        </div>
+      </div>
+    `;
+    
+    // Add event listeners for swatches
+    const swatches = contentEl.querySelectorAll('.cognitia-style-swatch');
+    swatches.forEach(swatch => {
+      swatch.addEventListener('click', async () => {
+        const style = swatch.getAttribute('data-style') || 'dotted';
+        
+        // Update active state
+        swatches.forEach(s => s.classList.remove('active'));
+        swatch.classList.add('active');
+        
+        // Update preview
+        const preview = contentEl.querySelector('.cognitia-preview-highlight');
+        if (preview) {
+          preview.className = 'cognitia-preview-highlight ' + style;
+        }
+        
+        // Save and apply
+        try {
+          const result = await chrome.storage.sync.get(['cognitiaSettings']);
+          const settings = result.cognitiaSettings || {};
+          settings.highlightStyle = style;
+          await chrome.storage.sync.set({ cognitiaSettings: settings });
+          setHighlightStyle(style);
+        } catch (e) {
+          console.error('[Cognitia] Error saving style:', e);
+        }
+      });
+    });
+    
+    // Toggle listener
+    const toggle = contentEl.querySelector('#cognitia-enabled-toggle') as HTMLInputElement;
+    toggle?.addEventListener('change', async () => {
+      try {
+        const result = await chrome.storage.sync.get(['cognitiaSettings']);
+        const settings = result.cognitiaSettings || {};
+        settings.enabled = toggle.checked;
+        await chrome.storage.sync.set({ cognitiaSettings: settings });
+        
+        if (!toggle.checked) {
+          clearHighlights();
+        }
+      } catch (e) {
+        console.error('[Cognitia] Error saving enabled state:', e);
+      }
+    });
+    
+    // Chat with Grok button
+    const chatBtn = contentEl.querySelector('#cognitia-chat-grok-btn');
+    chatBtn?.addEventListener('click', () => {
+      openGeneralChat();
+    });
+  }
+  
+  sidebar.classList.add('open');
+}
+
+
