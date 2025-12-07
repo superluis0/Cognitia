@@ -15,6 +15,7 @@ import {
   getDiscoveryQueueSize,
   clearDiscoveryQueue
 } from '../crawler/crawlerWrapper.js';
+import { fixGrokipediaUrls } from '../crawler/fixGrokipediaUrls.js';
 
 const router = Router();
 
@@ -173,6 +174,26 @@ router.post('/scheduler/reset-queue', (req, res) => {
     previousSize: oldSize,
     newSize: 0
   });
+});
+
+/**
+ * Fix incorrectly capitalized Grokipedia URLs in the database
+ * POST /api/scheduler/fix-urls
+ * Fixes known incorrect URL patterns (e.g., Artificial_Intelligence → Artificial_intelligence)
+ */
+router.post('/scheduler/fix-urls', (req, res) => {
+  try {
+    fixGrokipediaUrls();
+    res.json({ 
+      success: true, 
+      message: 'URL migration completed. Check logs for details.' 
+    });
+  } catch (error) {
+    res.status(500).json({ 
+      success: false, 
+      error: String(error) 
+    });
+  }
 });
 
 export { router as schedulerRoutes };

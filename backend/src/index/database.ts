@@ -137,6 +137,12 @@ export function getTopicCount(): number {
   return result.count;
 }
 
+export function updateTopicUrl(title: string, newUrl: string): void {
+  const database = getDatabase();
+  const stmt = database.prepare('UPDATE topics SET url = ?, updated_at = CURRENT_TIMESTAMP WHERE title = ?');
+  stmt.run(newUrl, title);
+}
+
 export function closeDatabase(): void {
   if (db) {
     db.close();

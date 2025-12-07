@@ -17,7 +17,7 @@ export async function seedSampleTopics(): Promise<void> {
     },
     {
       title: 'Artificial Intelligence',
-      url: 'https://grokipedia.com/page/Artificial_Intelligence',
+      url: 'https://grokipedia.com/page/Artificial_intelligence',
       summary: 'Artificial intelligence is intelligence demonstrated by machines.',
       aliases: ['AI', 'Machine Intelligence']
     },
