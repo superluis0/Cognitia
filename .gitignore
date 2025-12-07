@@ -1,0 +1,18 @@
+node_modules/
+dist/
+.env
+*.log
+.DS_Store
+
+# Backend
+backend/data/*.db
+backend/data/*.db-journal
+
+# Extension build
+extension/dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
