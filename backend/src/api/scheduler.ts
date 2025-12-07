@@ -11,6 +11,10 @@ import {
   stopParallelSeeding,
   getParallelSeedingStatus
 } from '../crawler/parallelCrawler.js';
+import {
+  getDiscoveryQueueSize,
+  clearDiscoveryQueue
+} from '../crawler/crawlerWrapper.js';
 
 const router = Router();
 
@@ -141,6 +145,34 @@ router.post('/scheduler/stop-parallel', (req, res) => {
 router.get('/scheduler/parallel-status', (req, res) => {
   const status = getParallelSeedingStatus();
   res.json(status);
+});
+
+/**
+ * Debug endpoint - inspect discovery queue contents
+ * GET /api/scheduler/debug-queue
+ */
+router.get('/scheduler/debug-queue', (req, res) => {
+  const size = getDiscoveryQueueSize();
+  res.json({
+    queueSize: size,
+    status: size === 0 ? 'empty' : size < 100 ? 'normal' : 'large'
+  });
+});
+
+/**
+ * Reset discovery queue - clear all pending crawls
+ * POST /api/scheduler/reset-queue
+ * WARNING: This clears all discovered topics pending crawl
+ */
+router.post('/scheduler/reset-queue', (req, res) => {
+  const oldSize = getDiscoveryQueueSize();
+  clearDiscoveryQueue();
+  res.json({ 
+    success: true, 
+    message: 'Discovery queue cleared',
+    previousSize: oldSize,
+    newSize: 0
+  });
 });
 
 export { router as schedulerRoutes };

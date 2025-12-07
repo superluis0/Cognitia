@@ -34,13 +34,19 @@ def extract_internal_links(html: str) -> list:
     Extract all internal Grokipedia page links from the HTML.
     Returns a list of topic names (e.g., ['Elon_Musk', 'Tesla', ...])
     """
-    # Find all grokipedia.com/page/ links
-    pattern = r'https://grokipedia\.com/page/([^"\s\)]+)'
+    # Find all grokipedia.com/page/ links with more restrictive pattern
+    pattern = r'https://grokipedia\.com/page/([A-Za-z0-9_\-\(\)]+)'
     matches = re.findall(pattern, html)
     
-    # Deduplicate and clean
-    unique_topics = list(set(matches))
-    return unique_topics
+    # Clean and deduplicate
+    cleaned = []
+    for match in matches:
+        # Remove trailing backslashes and other escape characters
+        slug = match.rstrip('\\').strip()
+        if slug and slug not in cleaned:
+            cleaned.append(slug)
+    
+    return cleaned
 
 
 def extract_markdown_content(html: str) -> str:

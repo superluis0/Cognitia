@@ -118,6 +118,14 @@ export function popFromDiscoveryQueue(): string | undefined {
 }
 
 /**
+ * Clear the discovery queue completely
+ */
+export function clearDiscoveryQueue(): void {
+  discoveryQueue.clear();
+  console.log('[Crawler] Discovery queue cleared');
+}
+
+/**
  * Crawl a page and save it to the database
  */
 export async function crawlAndSave(url: string): Promise<number> {

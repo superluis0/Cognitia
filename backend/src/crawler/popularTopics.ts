@@ -4,16 +4,16 @@
  */
 export const POPULAR_TOPICS = [
   // Tech & AI
-  'Artificial_Intelligence',
-  'Machine_Learning',
+  // 'Artificial_Intelligence', // Returns 404 - incorrect slug capitalization
+  // 'Machine_Learning', // Returns 404 - incorrect slug capitalization
   'ChatGPT',
   'OpenAI',
   'Grok',
-  'Claude_(AI)',
-  'Large_Language_Model',
-  'Neural_Network',
-  'Deep_Learning',
-  'Generative_AI',
+  // 'Claude_(AI)', // Returns 404 - may not exist or different slug format
+  // 'Large_Language_Model', // Returns 404 - incorrect slug capitalization
+  // 'Neural_Network', // Returns 404 - incorrect slug capitalization
+  // 'Deep_Learning', // Returns 404 - incorrect slug capitalization
+  // 'Generative_AI', // Returns 404 - incorrect slug capitalization
   'AGI',
   'Sam_Altman',
   
