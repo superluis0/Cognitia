@@ -90,8 +90,8 @@ export function createSidebar(): HTMLElement {
 }
 
 export async function openSidebar(topic: Topic): Promise<void> {
-  // Reset sidebar if it was in general chat mode
-  if (sidebarElement && isGeneralChatMode) {
+  // Always destroy existing sidebar and create fresh
+  if (sidebarElement) {
     sidebarElement.remove();
     sidebarElement = null;
   }
@@ -247,6 +247,16 @@ function appendChatMessage(container: HTMLElement, role: 'user' | 'assistant', c
 export function closeSidebar(): void {
   if (sidebarElement) {
     sidebarElement.classList.remove('open');
+    // Destroy after animation completes
+    const elementToRemove = sidebarElement;
+    setTimeout(() => {
+      if (elementToRemove && !elementToRemove.classList.contains('open')) {
+        elementToRemove.remove();
+        if (sidebarElement === elementToRemove) {
+          sidebarElement = null;
+        }
+      }
+    }, 400);
   }
   currentTopic = null;
   chatHistory = [];
@@ -254,8 +264,8 @@ export function closeSidebar(): void {
 }
 
 export async function openGeneralChat(): Promise<void> {
-  // Reset sidebar if it was in topic mode
-  if (sidebarElement && !isGeneralChatMode) {
+  // Always destroy existing sidebar and create fresh
+  if (sidebarElement) {
     sidebarElement.remove();
     sidebarElement = null;
   }
