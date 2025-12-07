@@ -22,14 +22,14 @@ function createFactCheckButton(tweetId: string, tweetText: string): HTMLElement 
   const button = document.createElement('button');
   button.className = FACT_CHECK_BUTTON_CLASS;
   button.innerHTML = FACT_CHECK_ICON;
-  button.title = '';
+  button.title = 'Grok, is this true?';
   button.setAttribute('data-tweet-id', tweetId);
-  button.setAttribute('aria-label', 'Fact-check this tweet');
+  button.setAttribute('aria-label', 'Grok, is this true?');
   
   // Create custom tooltip
   const tooltip = document.createElement('div');
   tooltip.className = 'cognitia-fact-check-tooltip';
-  tooltip.textContent = 'Fact-check this tweet';
+  tooltip.textContent = 'Grok, is this true?';
   button.appendChild(tooltip);
   
   button.addEventListener('click', (e) => {
