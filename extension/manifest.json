@@ -12,13 +12,13 @@
     "https://twitter.com/*"
   ],
   "background": {
-    "service_worker": "dist/background/service-worker.js",
+    "service_worker": "background/service-worker.js",
     "type": "module"
   },
   "content_scripts": [
     {
       "matches": ["https://x.com/*", "https://twitter.com/*"],
-      "js": ["dist/content/index.js"],
+      "js": ["content/index.js"],
       "css": ["styles/cognitia.css"],
       "run_at": "document_idle"
     }

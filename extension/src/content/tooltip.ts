@@ -1,4 +1,5 @@
 import type { Topic, SummaryResponse } from '../../../shared/types';
+import { renderMarkdown, sanitizeHtml } from './markdown';
 
 let tooltipElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
@@ -84,13 +85,13 @@ export async function showTooltip(target: HTMLElement, topic: Topic): Promise<vo
     });
     
     if (response.success && currentTopic?.id === topic.id) {
-      summaryEl.textContent = response.data.summary;
+      summaryEl.innerHTML = sanitizeHtml(renderMarkdown(response.data.summary));
     } else if (!response.success && currentTopic?.id === topic.id) {
-      summaryEl.textContent = topic.summary || 'Unable to load summary.';
+      summaryEl.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
     }
   } catch (error) {
     if (currentTopic?.id === topic.id) {
-      summaryEl.textContent = topic.summary || 'Unable to load summary.';
+      summaryEl.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
     }
   }
 }

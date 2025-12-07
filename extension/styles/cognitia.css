@@ -279,3 +279,124 @@
     transform: rotate(360deg);
   }
 }
+
+/* Markdown Rendering Styles */
+.cognitia-tooltip-summary,
+.cognitia-sidebar-summary,
+.cognitia-chat-message-assistant {
+  line-height: 1.5;
+}
+
+.cognitia-p {
+  margin: 0 0 0.5em 0;
+}
+
+.cognitia-p:last-child {
+  margin-bottom: 0;
+}
+
+.cognitia-h2 {
+  font-size: 1.1em;
+  font-weight: 700;
+  margin: 0.8em 0 0.4em 0;
+  color: #e7e9ea;
+}
+
+.cognitia-h3 {
+  font-size: 1em;
+  font-weight: 600;
+  margin: 0.6em 0 0.3em 0;
+  color: #e7e9ea;
+}
+
+.cognitia-h4 {
+  font-size: 0.95em;
+  font-weight: 600;
+  margin: 0.5em 0 0.25em 0;
+  color: #e7e9ea;
+}
+
+.cognitia-tooltip-summary strong,
+.cognitia-sidebar-summary strong,
+.cognitia-chat-message-assistant strong {
+  font-weight: 600;
+  color: #fff;
+}
+
+.cognitia-tooltip-summary em,
+.cognitia-sidebar-summary em,
+.cognitia-chat-message-assistant em {
+  font-style: italic;
+}
+
+.cognitia-inline-code {
+  background: rgba(110, 118, 129, 0.3);
+  padding: 0.15em 0.4em;
+  border-radius: 4px;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 0.9em;
+}
+
+.cognitia-code-block {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  margin: 0.5em 0;
+  overflow-x: auto;
+  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+  font-size: 0.85em;
+  line-height: 1.4;
+}
+
+.cognitia-code-block code {
+  background: none;
+  padding: 0;
+}
+
+.cognitia-list {
+  margin: 0.5em 0;
+  padding-left: 1.5em;
+}
+
+.cognitia-list li {
+  margin: 0.25em 0;
+}
+
+.cognitia-blockquote {
+  border-left: 3px solid #1DA1F2;
+  margin: 0.5em 0;
+  padding-left: 12px;
+  color: #8b949e;
+  font-style: italic;
+}
+
+.cognitia-link {
+  color: #1DA1F2;
+  text-decoration: none;
+}
+
+.cognitia-link:hover {
+  text-decoration: underline;
+}
+
+.cognitia-hr {
+  border: none;
+  border-top: 1px solid #38444d;
+  margin: 1em 0;
+}
+
+/* Chat message markdown specific */
+.cognitia-chat-message-assistant .cognitia-p {
+  margin: 0 0 0.4em 0;
+}
+
+.cognitia-chat-message-assistant .cognitia-list {
+  margin: 0.3em 0;
+  padding-left: 1.2em;
+}
+
+.cognitia-chat-message-assistant .cognitia-code-block {
+  margin: 0.4em 0;
+  padding: 8px;
+}

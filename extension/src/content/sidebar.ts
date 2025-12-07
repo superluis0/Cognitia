@@ -1,4 +1,5 @@
 import type { Topic, ChatMessage } from '../../../shared/types';
+import { renderMarkdown, sanitizeHtml } from './markdown';
 
 let sidebarElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
@@ -106,12 +107,12 @@ async function loadSummary(topic: Topic, container: HTMLElement): Promise<void> 
     });
     
     if (response.success) {
-      container.textContent = response.data.summary;
+      container.innerHTML = sanitizeHtml(renderMarkdown(response.data.summary));
     } else {
-      container.textContent = topic.summary || 'Unable to load summary.';
+      container.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
     }
   } catch (error) {
-    container.textContent = topic.summary || 'Unable to load summary.';
+    container.innerHTML = sanitizeHtml(renderMarkdown(topic.summary || 'Unable to load summary.'));
   }
 }
 
@@ -198,6 +199,7 @@ async function sendChatMessage(): Promise<void> {
 
 function appendChatMessage(container: HTMLElement, role: 'user' | 'assistant', content: string): void {
   const messageEl = document.createElement('div');
+  messageEl.className = `cognitia-chat-message cognitia-chat-message-${role}`;
   messageEl.style.cssText = `
     padding: 10px 14px;
     margin-bottom: 8px;
@@ -208,7 +210,13 @@ function appendChatMessage(container: HTMLElement, role: 'user' | 'assistant', c
       ? 'background: #1DA1F2; color: #fff; margin-left: 20px;' 
       : 'background: #273340; color: #e7e9ea; margin-right: 20px;'}
   `;
-  messageEl.textContent = content;
+  
+  if (role === 'assistant') {
+    messageEl.innerHTML = sanitizeHtml(renderMarkdown(content));
+  } else {
+    messageEl.textContent = content;
+  }
+  
   container.appendChild(messageEl);
   container.scrollTop = container.scrollHeight;
 }
