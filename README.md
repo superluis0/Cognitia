@@ -28,7 +28,8 @@ A Chrome extension that enriches your X.com (Twitter) browsing experience by aut
 - Node.js 18+
 - Python 3.9+
 - Chrome browser
-- xAI API key
+- xAI API key (for AI summaries and chat)
+- X API Bearer Token (for fetching tweet text)
 
 ### Backend Setup
 
@@ -38,7 +39,9 @@ npm install
 
 # Create .env file
 cp .env.example .env
-# Edit .env and add your xAI API key
+# Edit .env and add your API keys:
+#   XAI_API_KEY - Get from https://console.x.ai/
+#   X_API_BEARER_TOKEN - Get from https://developer.x.com/
 
 # Build and start
 npm run build
