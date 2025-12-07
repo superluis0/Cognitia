@@ -1,5 +1,6 @@
 import type { Topic, SummaryResponse } from '../../../shared/types';
 import { renderMarkdown, sanitizeHtml } from './markdown';
+import { openSidebar } from './sidebar';
 
 let tooltipElement: HTMLElement | null = null;
 let currentTopic: Topic | null = null;
@@ -46,10 +47,7 @@ export function createTooltip(): HTMLElement {
   const detailsBtn = tooltipElement.querySelector('.cognitia-tooltip-btn');
   detailsBtn?.addEventListener('click', () => {
     if (currentTopic) {
-      chrome.runtime.sendMessage({
-        type: 'OPEN_SIDEBAR',
-        payload: { topic: currentTopic }
-      });
+      openSidebar(currentTopic);
       hideTooltip(true);
     }
   });

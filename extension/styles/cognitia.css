@@ -1,327 +1,573 @@
+/* ============================================
+   COGNITIA - Neural Elegance Design System
+   Award-Winning UI for Chrome Extension
+   ============================================ */
+
+/* Design Tokens */
+:root {
+  /* Depths */
+  --cog-void: #050508;
+  --cog-abyss: #0a0d12;
+  --cog-surface: #12161d;
+  --cog-elevated: #1a1f2a;
+  --cog-glass: rgba(255, 255, 255, 0.03);
+  --cog-glass-border: rgba(255, 255, 255, 0.08);
+  
+  /* Amber Ember Gradient */
+  --cog-ember-1: #f59e0b;
+  --cog-ember-2: #d97706;
+  --cog-ember-3: #b45309;
+  --cog-gradient-ember: linear-gradient(135deg, var(--cog-ember-1), var(--cog-ember-2), var(--cog-ember-3));
+  
+  /* Text */
+  --cog-text-primary: #f8fafc;
+  --cog-text-secondary: #94a3b8;
+  --cog-text-muted: #64748b;
+  
+  /* Typography */
+  --cog-font-display: 'Clash Display', -apple-system, sans-serif;
+  --cog-font-body: 'Space Grotesk', -apple-system, sans-serif;
+  --cog-font-mono: 'JetBrains Mono', 'SF Mono', monospace;
+}
+
+/* ============================================
+   HIGHLIGHT STYLES
+   ============================================ */
+
 .cognitia-highlight {
   cursor: pointer;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cognitia-highlight:hover {
-  background-color: rgba(29, 161, 242, 0.15) !important;
-  border-radius: 2px;
+  background-color: rgba(245, 158, 11, 0.15) !important;
+  border-radius: 3px;
 }
 
 /* Dotted underline (default) */
 .cognitia-highlight.dotted {
-  text-decoration: underline dotted #1DA1F2;
+  text-decoration: underline dotted var(--cog-ember-2);
   text-decoration-thickness: 2px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 /* Solid underline */
 .cognitia-highlight.solid {
-  text-decoration: underline solid #1DA1F2;
+  text-decoration: underline solid var(--cog-ember-2);
   text-decoration-thickness: 2px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 /* Dashed underline */
 .cognitia-highlight.dashed {
-  text-decoration: underline dashed #1DA1F2;
+  text-decoration: underline dashed var(--cog-ember-2);
   text-decoration-thickness: 2px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
 
 /* Wavy underline */
 .cognitia-highlight.wavy {
-  text-decoration: underline wavy #1DA1F2;
-  text-underline-offset: 2px;
+  text-decoration: underline wavy var(--cog-ember-2);
+  text-underline-offset: 3px;
 }
 
 /* Background tint only */
 .cognitia-highlight.tint {
-  background: rgba(29, 161, 242, 0.12);
-  border-radius: 3px;
-  padding: 0 3px;
-  margin: 0 -3px;
+  background: rgba(245, 158, 11, 0.15);
+  border-radius: 4px;
+  padding: 1px 4px;
+  margin: 0 -4px;
 }
 
 /* Tint + dotted underline */
 .cognitia-highlight.tint-dotted {
-  background: rgba(29, 161, 242, 0.08);
-  text-decoration: underline dotted #1DA1F2;
+  background: rgba(245, 158, 11, 0.1);
+  text-decoration: underline dotted var(--cog-ember-2);
   text-decoration-thickness: 2px;
-  text-underline-offset: 2px;
-  border-radius: 2px;
-  padding: 0 2px;
-  margin: 0 -2px;
+  text-underline-offset: 3px;
+  border-radius: 3px;
+  padding: 1px 3px;
+  margin: 0 -3px;
 }
 
 /* Colored text */
 .cognitia-highlight.colored {
-  color: #1DA1F2;
-  text-decoration: underline dotted #1DA1F2;
+  color: var(--cog-ember-2) !important;
+  text-decoration: underline dotted var(--cog-ember-2);
   text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
+  text-underline-offset: 3px;
 }
+
+/* ============================================
+   TOOLTIP - Frosted Glass Design
+   ============================================ */
 
 .cognitia-tooltip {
   position: absolute;
   z-index: 10000;
-  max-width: 320px;
-  padding: 12px 16px;
-  background: #15202b;
-  border: 1px solid #38444d;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  max-width: 340px;
+  padding: 16px 18px;
+  background: rgba(10, 13, 18, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid var(--cog-glass-border);
+  border-left: 3px solid var(--cog-ember-2);
+  border-radius: 14px;
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+  font-family: var(--cog-font-body);
   font-size: 14px;
-  line-height: 1.4;
-  color: #fff;
+  line-height: 1.5;
+  color: var(--cog-text-primary);
   opacity: 0;
   visibility: hidden;
-  transition: opacity 0.2s, visibility 0.2s;
+  transform: scale(0.95) translateY(5px);
+  transform-origin: top left;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cognitia-tooltip.visible {
   opacity: 1;
   visibility: visible;
+  transform: scale(1) translateY(0);
 }
 
 .cognitia-tooltip-title {
+  font-family: var(--cog-font-display);
   font-weight: 600;
-  font-size: 15px;
-  margin-bottom: 8px;
-  color: #1DA1F2;
+  font-size: 16px;
+  margin-bottom: 10px;
+  background: var(--cog-gradient-ember);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.3px;
 }
 
 .cognitia-tooltip-summary {
-  color: #e7e9ea;
-  margin-bottom: 10px;
+  color: var(--cog-text-secondary);
+  margin-bottom: 12px;
+  font-size: 13px;
 }
 
 .cognitia-tooltip-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
-  color: #1DA1F2;
+  gap: 5px;
+  color: var(--cog-ember-2);
   text-decoration: none;
-  font-size: 13px;
+  font-size: 12px;
+  font-family: var(--cog-font-mono);
+  letter-spacing: 0.3px;
+  transition: color 0.2s ease;
 }
 
 .cognitia-tooltip-link:hover {
-  text-decoration: underline;
+  color: var(--cog-ember-3);
 }
 
 .cognitia-tooltip-actions {
   display: flex;
   gap: 8px;
-  margin-top: 8px;
-  padding-top: 8px;
-  border-top: 1px solid #38444d;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--cog-glass-border);
 }
 
 .cognitia-tooltip-btn {
-  padding: 6px 12px;
-  background: #1DA1F2;
+  padding: 8px 14px;
+  background: var(--cog-gradient-ember);
   border: none;
-  border-radius: 16px;
-  color: #fff;
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 10px;
+  color: white;
+  font-family: var(--cog-font-body);
+  font-size: 12px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(245, 158, 11, 0.3);
 }
 
 .cognitia-tooltip-btn:hover {
-  background: #0d8ecf;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.4);
 }
 
 .cognitia-tooltip-btn.secondary {
-  background: transparent;
-  border: 1px solid #536471;
-  color: #e7e9ea;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  color: var(--cog-text-secondary);
+  box-shadow: none;
 }
 
 .cognitia-tooltip-btn.secondary:hover {
-  background: rgba(239, 243, 244, 0.1);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--cog-ember-1);
+  color: var(--cog-text-primary);
 }
+
+/* ============================================
+   SIDEBAR - Premium Glass Panel
+   ============================================ */
 
 .cognitia-sidebar {
   position: fixed;
   top: 0;
   right: 0;
-  width: 360px;
+  width: 380px;
   height: 100vh;
-  background: #15202b;
-  border-left: 1px solid #38444d;
+  background: var(--cog-abyss);
+  border-left: 1px solid var(--cog-glass-border);
   z-index: 10001;
   transform: translateX(100%);
-  transition: transform 0.3s ease;
+  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   flex-direction: column;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: var(--cog-font-body);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.3);
+}
+
+/* Ember border effect */
+.cognitia-sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2px;
+  height: 100%;
+  background: var(--cog-gradient-ember);
+  background-size: 100% 200%;
+  animation: aurora-flow 4s ease infinite;
+}
+
+@keyframes aurora-flow {
+  0%, 100% { background-position: 0% 0%; }
+  50% { background-position: 0% 100%; }
+}
+
+/* Grain texture */
+.cognitia-sidebar::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+  opacity: 0.015;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.cognitia-sidebar > * {
+  position: relative;
+  z-index: 1;
 }
 
 .cognitia-sidebar.open {
   transform: translateX(0);
 }
 
+/* Header */
 .cognitia-sidebar-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px;
-  border-bottom: 1px solid #38444d;
+  padding: 18px 20px;
+  background: var(--cog-glass);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--cog-glass-border);
 }
 
 .cognitia-sidebar-title {
+  font-family: var(--cog-font-display);
   font-size: 18px;
   font-weight: 700;
-  color: #e7e9ea;
+  color: var(--cog-text-primary);
+  letter-spacing: -0.3px;
 }
 
 .cognitia-sidebar-close {
-  background: none;
-  border: none;
-  color: #71767b;
-  font-size: 20px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 8px;
+  color: var(--cog-text-muted);
+  font-size: 18px;
   cursor: pointer;
-  padding: 4px;
-  border-radius: 50%;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cognitia-sidebar-close:hover {
-  background: rgba(239, 243, 244, 0.1);
-  color: #e7e9ea;
+  background: rgba(239, 68, 68, 0.15);
+  border-color: rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  transform: rotate(90deg);
 }
 
+/* Content */
 .cognitia-sidebar-content {
   flex: 1;
   overflow-y: auto;
-  padding: 16px;
+  padding: 20px;
 }
 
+/* Custom scrollbar */
+.cognitia-sidebar-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.cognitia-sidebar-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.cognitia-sidebar-content::-webkit-scrollbar-thumb {
+  background: var(--cog-glass-border);
+  border-radius: 3px;
+}
+
+.cognitia-sidebar-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+/* Staggered reveal animations */
+.cognitia-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  animation: cognitia-reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.cognitia-reveal-1 { animation-delay: 0ms; }
+.cognitia-reveal-2 { animation-delay: 80ms; }
+.cognitia-reveal-3 { animation-delay: 160ms; }
+.cognitia-reveal-4 { animation-delay: 240ms; }
+.cognitia-reveal-5 { animation-delay: 320ms; }
+
+@keyframes cognitia-reveal {
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Summary section */
 .cognitia-sidebar-summary {
-  color: #e7e9ea;
-  font-size: 15px;
-  line-height: 1.5;
-  margin-bottom: 20px;
+  color: var(--cog-text-secondary);
+  font-size: 14px;
+  line-height: 1.65;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 12px;
 }
 
+/* Sections */
 .cognitia-sidebar-section {
-  margin-bottom: 20px;
+  margin-bottom: 24px;
 }
 
 .cognitia-sidebar-section-title {
-  font-size: 13px;
-  font-weight: 600;
-  color: #71767b;
+  font-family: var(--cog-font-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--cog-text-muted);
   text-transform: uppercase;
+  letter-spacing: 1.5px;
   margin-bottom: 12px;
 }
 
+/* Quick Questions */
 .cognitia-quick-questions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cognitia-quick-question {
-  padding: 12px;
-  background: rgba(29, 161, 242, 0.1);
-  border: 1px solid #38444d;
-  border-radius: 8px;
-  color: #e7e9ea;
-  font-size: 14px;
+  padding: 14px 16px;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 12px;
+  color: var(--cog-text-secondary);
+  font-family: var(--cog-font-body);
+  font-size: 13px;
   text-align: left;
   cursor: pointer;
-  transition: background 0.2s, border-color 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.cognitia-quick-question::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 3px;
+  height: 100%;
+  background: var(--cog-gradient-ember);
+  opacity: 0;
+  transition: opacity 0.25s ease;
 }
 
 .cognitia-quick-question:hover {
-  background: rgba(29, 161, 242, 0.2);
-  border-color: #1DA1F2;
+  background: rgba(245, 158, 11, 0.08);
+  border-color: var(--cog-ember-1);
+  color: var(--cog-text-primary);
+  transform: translateX(4px);
 }
 
+.cognitia-quick-question:hover::before {
+  opacity: 1;
+}
+
+/* Chat */
 .cognitia-chat-container {
-  border-top: 1px solid #38444d;
-  padding: 16px;
+  border-top: 1px solid var(--cog-glass-border);
+  padding: 16px 20px;
+  background: var(--cog-glass);
 }
 
 .cognitia-chat-input-wrapper {
   display: flex;
-  gap: 8px;
+  gap: 10px;
 }
 
 .cognitia-chat-input {
   flex: 1;
-  padding: 10px 14px;
-  background: #273340;
-  border: 1px solid #38444d;
-  border-radius: 20px;
-  color: #e7e9ea;
+  padding: 12px 16px;
+  background: var(--cog-surface);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 12px;
+  color: var(--cog-text-primary);
+  font-family: var(--cog-font-body);
   font-size: 14px;
   outline: none;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cognitia-chat-input:focus {
-  border-color: #1DA1F2;
+  border-color: var(--cog-ember-1);
+  box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
 }
 
 .cognitia-chat-input::placeholder {
-  color: #71767b;
+  color: var(--cog-text-muted);
 }
 
 .cognitia-chat-send {
-  padding: 10px 16px;
-  background: #1DA1F2;
+  padding: 12px 20px;
+  background: var(--cog-gradient-ember);
   border: none;
-  border-radius: 20px;
-  color: #fff;
+  border-radius: 12px;
+  color: white;
+  font-family: var(--cog-font-body);
   font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
 }
 
 .cognitia-chat-send:hover {
-  background: #0d8ecf;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(245, 158, 11, 0.4);
 }
 
 .cognitia-chat-send:disabled {
-  background: #536471;
+  background: var(--cog-elevated);
+  box-shadow: none;
   cursor: not-allowed;
+  transform: none;
 }
 
+/* Chat History */
+.cognitia-chat-history {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 16px;
+}
+
+.cognitia-chat-message {
+  padding: 14px 16px;
+  border-radius: 14px;
+  font-size: 14px;
+  line-height: 1.55;
+  animation: message-appear 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes message-appear {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cognitia-chat-message-user {
+  background: var(--cog-gradient-ember);
+  color: white;
+  margin-left: 32px;
+  border-bottom-right-radius: 4px;
+}
+
+.cognitia-chat-message-assistant {
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  color: var(--cog-text-secondary);
+  margin-right: 32px;
+  border-bottom-left-radius: 4px;
+}
+
+/* Grokipedia Link */
 .cognitia-grokipedia-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 10px 16px;
-  background: transparent;
-  border: 1px solid #1DA1F2;
-  border-radius: 20px;
-  color: #1DA1F2;
-  font-size: 14px;
+  gap: 8px;
+  padding: 12px 18px;
+  background: var(--cog-glass);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 12px;
+  color: var(--cog-ember-2);
+  font-family: var(--cog-font-mono);
+  font-size: 13px;
   font-weight: 500;
   text-decoration: none;
-  transition: background 0.2s;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .cognitia-grokipedia-link:hover {
-  background: rgba(29, 161, 242, 0.1);
+  background: rgba(245, 158, 11, 0.1);
+  border-color: var(--cog-ember-1);
+  transform: translateY(-2px);
 }
 
+/* Loading */
 .cognitia-loading {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  color: #71767b;
+  padding: 24px;
+  color: var(--cog-text-muted);
+  gap: 12px;
+  font-size: 13px;
 }
 
 .cognitia-loading-spinner {
   width: 20px;
   height: 20px;
-  border: 2px solid #38444d;
-  border-top-color: #1DA1F2;
+  border: 2px solid var(--cog-glass-border);
+  border-top-color: var(--cog-ember-2);
   border-radius: 50%;
   animation: cognitia-spin 0.8s linear infinite;
 }
@@ -332,15 +578,18 @@
   }
 }
 
-/* Markdown Rendering Styles */
+/* ============================================
+   MARKDOWN RENDERING
+   ============================================ */
+
 .cognitia-tooltip-summary,
 .cognitia-sidebar-summary,
 .cognitia-chat-message-assistant {
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .cognitia-p {
-  margin: 0 0 0.5em 0;
+  margin: 0 0 0.6em 0;
 }
 
 .cognitia-p:last-child {
@@ -348,107 +597,144 @@
 }
 
 .cognitia-h2 {
-  font-size: 1.1em;
+  font-family: var(--cog-font-display);
+  font-size: 1.15em;
   font-weight: 700;
-  margin: 0.8em 0 0.4em 0;
-  color: #e7e9ea;
+  margin: 1em 0 0.5em 0;
+  color: var(--cog-text-primary);
 }
 
 .cognitia-h3 {
-  font-size: 1em;
+  font-family: var(--cog-font-display);
+  font-size: 1.05em;
   font-weight: 600;
-  margin: 0.6em 0 0.3em 0;
-  color: #e7e9ea;
+  margin: 0.8em 0 0.4em 0;
+  color: var(--cog-text-primary);
 }
 
 .cognitia-h4 {
   font-size: 0.95em;
   font-weight: 600;
-  margin: 0.5em 0 0.25em 0;
-  color: #e7e9ea;
+  margin: 0.6em 0 0.3em 0;
+  color: var(--cog-text-primary);
 }
 
 .cognitia-tooltip-summary strong,
 .cognitia-sidebar-summary strong,
 .cognitia-chat-message-assistant strong {
   font-weight: 600;
-  color: #fff;
+  color: var(--cog-text-primary);
 }
 
 .cognitia-tooltip-summary em,
 .cognitia-sidebar-summary em,
 .cognitia-chat-message-assistant em {
   font-style: italic;
+  color: var(--cog-ember-2);
 }
 
 .cognitia-inline-code {
-  background: rgba(110, 118, 129, 0.3);
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
-  font-size: 0.9em;
+  background: rgba(245, 158, 11, 0.15);
+  padding: 0.2em 0.5em;
+  border-radius: 5px;
+  font-family: var(--cog-font-mono);
+  font-size: 0.88em;
+  color: var(--cog-ember-1);
 }
 
 .cognitia-code-block {
-  background: #0d1117;
-  border: 1px solid #30363d;
-  border-radius: 6px;
-  padding: 12px;
-  margin: 0.5em 0;
+  background: var(--cog-void);
+  border: 1px solid var(--cog-glass-border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0.6em 0;
   overflow-x: auto;
-  font-family: 'SF Mono', 'Menlo', 'Monaco', monospace;
+  font-family: var(--cog-font-mono);
   font-size: 0.85em;
-  line-height: 1.4;
+  line-height: 1.5;
 }
 
 .cognitia-code-block code {
   background: none;
   padding: 0;
+  color: var(--cog-text-secondary);
 }
 
 .cognitia-list {
-  margin: 0.5em 0;
+  margin: 0.6em 0;
   padding-left: 1.5em;
 }
 
 .cognitia-list li {
-  margin: 0.25em 0;
+  margin: 0.35em 0;
+  color: var(--cog-text-secondary);
+}
+
+.cognitia-list li::marker {
+  color: var(--cog-ember-2);
 }
 
 .cognitia-blockquote {
-  border-left: 3px solid #1DA1F2;
-  margin: 0.5em 0;
-  padding-left: 12px;
-  color: #8b949e;
+  border-left: 3px solid var(--cog-ember-2);
+  margin: 0.6em 0;
+  padding-left: 14px;
+  color: var(--cog-text-muted);
   font-style: italic;
 }
 
 .cognitia-link {
-  color: #1DA1F2;
+  color: var(--cog-ember-2);
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .cognitia-link:hover {
+  color: var(--cog-ember-3);
   text-decoration: underline;
 }
 
 .cognitia-hr {
   border: none;
-  border-top: 1px solid #38444d;
-  margin: 1em 0;
+  border-top: 1px solid var(--cog-glass-border);
+  margin: 1.2em 0;
 }
 
-/* Chat message markdown specific */
+/* Chat message specific */
 .cognitia-chat-message-assistant .cognitia-p {
-  margin: 0 0 0.4em 0;
+  margin: 0 0 0.5em 0;
 }
 
 .cognitia-chat-message-assistant .cognitia-list {
-  margin: 0.3em 0;
-  padding-left: 1.2em;
+  margin: 0.4em 0;
+  padding-left: 1.3em;
 }
 
 .cognitia-chat-message-assistant .cognitia-code-block {
-  margin: 0.4em 0;
-  padding: 8px;
+  margin: 0.5em 0;
+  padding: 10px 12px;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  .cognitia-sidebar,
+  .cognitia-tooltip,
+  .cognitia-highlight,
+  .cognitia-quick-question,
+  .cognitia-chat-message,
+  .cognitia-reveal {
+    transition: none !important;
+    animation: none !important;
+  }
+  
+  .cognitia-sidebar::before {
+    animation: none !important;
+  }
+  
+  .cognitia-reveal {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }

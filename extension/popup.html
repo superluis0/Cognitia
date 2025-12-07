@@ -3,8 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cognitia Settings</title>
+  <title>Cognitia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      /* Depths */
+      --void: #050508;
+      --abyss: #0a0d12;
+      --surface: #12161d;
+      --elevated: #1a1f2a;
+      --glass: rgba(255, 255, 255, 0.03);
+      --glass-border: rgba(255, 255, 255, 0.08);
+      
+      /* Amber Ember Accent Gradient */
+      --ember-1: #f59e0b;
+      --ember-2: #d97706;
+      --ember-3: #b45309;
+      --gradient-ember: linear-gradient(135deg, var(--ember-1), var(--ember-2), var(--ember-3));
+      
+      /* Text */
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      
+      /* Typography */
+      --font-display: 'Clash Display', sans-serif;
+      --font-body: 'Space Grotesk', sans-serif;
+      --font-mono: 'JetBrains Mono', monospace;
+    }
+    
     * {
       box-sizing: border-box;
       margin: 0;
@@ -12,68 +42,138 @@
     }
     
     body {
-      width: 320px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: #15202b;
-      color: #e7e9ea;
-      padding: 16px;
+      width: 340px;
+      font-family: var(--font-body);
+      background: var(--void);
+      color: var(--text-primary);
+      padding: 3px;
+      position: relative;
     }
     
+    /* Ember border wrapper */
+    .ember-border {
+      background: var(--gradient-ember);
+      background-size: 200% 200%;
+      animation: aurora-shift 8s ease infinite;
+      border-radius: 16px;
+      padding: 1px;
+    }
+    
+    @keyframes aurora-shift {
+      0%, 100% { background-position: 0% 50%; }
+      50% { background-position: 100% 50%; }
+    }
+    
+    .container {
+      background: var(--abyss);
+      border-radius: 15px;
+      padding: 20px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Grain texture overlay */
+    .container::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+      opacity: 0.03;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .container > * {
+      position: relative;
+      z-index: 1;
+    }
+    
+    /* Header */
     .header {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #38444d;
+      gap: 12px;
+      margin-bottom: 24px;
     }
     
     .logo {
-      width: 32px;
-      height: 32px;
-      background: #1DA1F2;
-      border-radius: 8px;
+      width: 40px;
+      height: 40px;
+      background: var(--gradient-ember);
+      border-radius: 12px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: bold;
-      font-size: 18px;
+      font-family: var(--font-display);
+      font-weight: 700;
+      font-size: 20px;
+      color: white;
+      box-shadow: 
+        0 4px 12px rgba(245, 158, 11, 0.3),
+        0 0 20px rgba(217, 119, 6, 0.2);
     }
     
     .title {
-      font-size: 18px;
-      font-weight: 700;
+      font-family: var(--font-display);
+      font-size: 22px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+      background: var(--gradient-ember);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
     }
     
+    /* Section styling */
     .section {
-      margin-bottom: 16px;
+      margin-bottom: 20px;
     }
     
     .section-title {
-      font-size: 13px;
-      font-weight: 600;
-      color: #71767b;
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-weight: 500;
+      color: var(--text-muted);
       text-transform: uppercase;
-      margin-bottom: 8px;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
     }
     
+    /* Glass card */
+    .glass-card {
+      background: var(--glass);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--glass-border);
+      border-radius: 12px;
+      padding: 14px 16px;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.12);
+      background: rgba(255, 255, 255, 0.05);
+    }
+    
+    /* Toggle row */
     .toggle-row {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 12px;
-      background: #273340;
-      border-radius: 8px;
     }
     
     .toggle-label {
       font-size: 14px;
+      font-weight: 500;
+      color: var(--text-primary);
     }
     
     .toggle {
       position: relative;
-      width: 44px;
-      height: 24px;
+      width: 48px;
+      height: 26px;
     }
     
     .toggle input {
@@ -89,9 +189,10 @@
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #536471;
-      transition: 0.3s;
-      border-radius: 24px;
+      background: var(--elevated);
+      border: 1px solid var(--glass-border);
+      transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
+      border-radius: 26px;
     }
     
     .toggle-slider:before {
@@ -101,229 +202,423 @@
       width: 18px;
       left: 3px;
       bottom: 3px;
-      background-color: white;
-      transition: 0.3s;
+      background: var(--text-secondary);
+      transition: all 0.4s cubic-bezier(0.68, -0.6, 0.32, 1.6);
       border-radius: 50%;
     }
     
     .toggle input:checked + .toggle-slider {
-      background-color: #1DA1F2;
+      background: var(--gradient-ember);
+      border-color: transparent;
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.4);
     }
     
     .toggle input:checked + .toggle-slider:before {
-      transform: translateX(20px);
+      transform: translateX(22px);
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     }
     
-    .input-group {
+    /* Style selector as swatches */
+    .style-swatches {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
       margin-bottom: 12px;
     }
     
-    .input-label {
-      display: block;
-      font-size: 13px;
-      color: #71767b;
-      margin-bottom: 6px;
+    .style-swatch {
+      aspect-ratio: 1;
+      border-radius: 10px;
+      border: 2px solid var(--glass-border);
+      background: var(--surface);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-family: var(--font-mono);
+      color: var(--text-muted);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
     }
     
-    .input {
-      width: 100%;
-      padding: 10px 12px;
-      background: #273340;
-      border: 1px solid #38444d;
-      border-radius: 8px;
-      color: #e7e9ea;
+    .style-swatch:hover {
+      border-color: var(--ember-1);
+      transform: scale(1.05);
+    }
+    
+    .style-swatch.active {
+      border-color: var(--ember-2);
+      background: rgba(245, 158, 11, 0.15);
+      box-shadow: 0 0 16px rgba(245, 158, 11, 0.3);
+    }
+    
+    .style-swatch.active::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: var(--gradient-ember);
+      opacity: 0.1;
+    }
+    
+    .swatch-preview {
+      width: 28px;
+      height: 3px;
+      background: var(--ember-2);
+      border-radius: 2px;
+    }
+    
+    .swatch-preview.dotted {
+      background: transparent;
+      border-bottom: 2px dotted var(--ember-2);
+    }
+    
+    .swatch-preview.solid {
+      height: 2px;
+    }
+    
+    .swatch-preview.dashed {
+      background: transparent;
+      border-bottom: 2px dashed var(--ember-2);
+    }
+    
+    .swatch-preview.wavy {
+      background: transparent;
+      text-decoration: underline wavy var(--ember-2);
+      color: transparent;
       font-size: 14px;
-      outline: none;
     }
     
-    .input:focus {
-      border-color: #1DA1F2;
+    .swatch-preview.wavy::after {
+      content: 'abc';
+      text-decoration: underline wavy var(--ember-2);
     }
     
-    .input::placeholder {
-      color: #71767b;
+    .swatch-preview.tint {
+      width: 32px;
+      height: 16px;
+      background: rgba(245, 158, 11, 0.25);
+      border-radius: 4px;
     }
     
-    .btn {
-      width: 100%;
-      padding: 12px;
-      background: #1DA1F2;
-      border: none;
-      border-radius: 20px;
-      color: #fff;
-      font-size: 14px;
+    .swatch-preview.tint-dotted {
+      width: 32px;
+      height: 16px;
+      background: rgba(245, 158, 11, 0.15);
+      border-bottom: 2px dotted var(--ember-2);
+      border-radius: 4px 4px 0 0;
+    }
+    
+    .swatch-preview.colored {
+      color: var(--ember-2);
+      font-family: var(--font-body);
+      font-size: 11px;
       font-weight: 600;
-      cursor: pointer;
-      transition: background 0.2s;
+      background: none;
+      height: auto;
+      width: auto;
     }
     
-    .btn:hover {
-      background: #0d8ecf;
+    .swatch-label {
+      position: absolute;
+      bottom: 4px;
+      font-size: 7px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      opacity: 0.6;
     }
     
-    .btn:disabled {
-      background: #536471;
-      cursor: not-allowed;
-    }
-    
-    .status {
-      margin-top: 12px;
-      padding: 10px;
-      border-radius: 8px;
-      font-size: 13px;
-      text-align: center;
-      display: none;
-    }
-    
-    .status.success {
-      display: block;
-      background: rgba(0, 186, 124, 0.2);
-      color: #00ba7c;
-    }
-    
-    .status.error {
-      display: block;
-      background: rgba(244, 33, 46, 0.2);
-      color: #f4212e;
-    }
-    
-    select.input {
-      cursor: pointer;
-      appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2371767b' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 12px center;
-      padding-right: 36px;
-    }
-    
-    .preview-group {
-      margin-top: 12px;
-    }
-    
+    /* Preview box */
     .preview-box {
-      padding: 12px;
-      background: #fff;
-      border-radius: 8px;
+      background: #f8fafc;
+      border-radius: 10px;
+      padding: 14px 16px;
       font-size: 14px;
-      color: #0f1419;
+      color: #0f172a;
+      line-height: 1.5;
+      border: 1px solid rgba(255, 255, 255, 0.1);
     }
     
     .preview-highlight {
       cursor: default;
-      text-decoration: none;
+      transition: all 0.2s ease;
     }
     
     .preview-highlight.dotted {
-      text-decoration: underline dotted #1DA1F2 !important;
-      text-decoration-thickness: 2px !important;
-      text-underline-offset: 2px !important;
+      text-decoration: underline dotted #d97706;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
     }
     
     .preview-highlight.solid {
-      text-decoration: underline solid #1DA1F2 !important;
-      text-decoration-thickness: 2px !important;
-      text-underline-offset: 2px !important;
+      text-decoration: underline solid #d97706;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
     }
     
     .preview-highlight.dashed {
-      text-decoration: underline dashed #1DA1F2 !important;
-      text-decoration-thickness: 2px !important;
-      text-underline-offset: 2px !important;
+      text-decoration: underline dashed #d97706;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
     }
     
     .preview-highlight.wavy {
-      text-decoration: underline wavy #1DA1F2 !important;
-      text-underline-offset: 2px !important;
+      text-decoration: underline wavy #d97706;
+      text-underline-offset: 3px;
     }
     
     .preview-highlight.tint {
-      text-decoration: none !important;
-      background: rgba(29, 161, 242, 0.15) !important;
-      border-radius: 3px;
-      padding: 0 3px;
-    }
-    
-    .preview-highlight.tint-dotted {
-      background: rgba(29, 161, 242, 0.1) !important;
-      text-decoration: underline dotted #1DA1F2 !important;
-      text-decoration-thickness: 2px !important;
-      text-underline-offset: 2px !important;
-      border-radius: 2px;
-      padding: 0 2px;
-    }
-    
-    .preview-highlight.colored {
-      color: #1DA1F2 !important;
-      text-decoration: underline dotted #1DA1F2 !important;
-      text-decoration-thickness: 1px !important;
-      text-underline-offset: 2px !important;
-    }
-    
-    .footer {
-      margin-top: 16px;
-      padding-top: 16px;
-      border-top: 1px solid #38444d;
-      text-align: center;
-      font-size: 12px;
-      color: #71767b;
-    }
-    
-    .footer a {
-      color: #1DA1F2;
+      background: rgba(245, 158, 11, 0.2);
+      border-radius: 4px;
+      padding: 2px 5px;
       text-decoration: none;
     }
     
+    .preview-highlight.tint-dotted {
+      background: rgba(245, 158, 11, 0.12);
+      text-decoration: underline dotted #d97706;
+      text-decoration-thickness: 2px;
+      text-underline-offset: 3px;
+      border-radius: 3px;
+      padding: 1px 4px;
+    }
+    
+    .preview-highlight.colored {
+      color: #b45309;
+      font-weight: 600;
+      text-decoration: underline dotted #b45309;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+    
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 14px 20px;
+      border: none;
+      border-radius: 12px;
+      font-family: var(--font-body);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .btn-primary {
+      background: var(--elevated);
+      color: var(--text-primary);
+      border: 1px solid var(--glass-border);
+    }
+    
+    .btn-primary:hover {
+      background: var(--surface);
+      border-color: var(--ember-1);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(245, 158, 11, 0.2);
+    }
+    
+    .btn-ember {
+      background: var(--gradient-ember);
+      background-size: 200% 200%;
+      color: white;
+      border: none;
+      box-shadow: 
+        0 4px 16px rgba(245, 158, 11, 0.3),
+        0 0 24px rgba(217, 119, 6, 0.2);
+      animation: aurora-shift 4s ease infinite;
+    }
+    
+    .btn-ember:hover {
+      transform: translateY(-3px) scale(1.02);
+      box-shadow: 
+        0 8px 24px rgba(245, 158, 11, 0.4),
+        0 0 32px rgba(217, 119, 6, 0.3);
+    }
+    
+    .btn-ember::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: -100%;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255, 255, 255, 0.2),
+        transparent
+      );
+      transition: left 0.5s ease;
+    }
+    
+    .btn-ember:hover::before {
+      left: 100%;
+    }
+    
+    .btn-icon {
+      margin-right: 8px;
+    }
+    
+    .btn-group {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    
+    /* Status message */
+    .status {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+      text-align: center;
+      display: none;
+      font-weight: 500;
+      animation: slideUp 0.3s ease;
+    }
+    
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .status.success {
+      display: block;
+      background: rgba(34, 197, 94, 0.15);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+    }
+    
+    .status.error {
+      display: block;
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+    
+    /* Footer */
+    .footer {
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid var(--glass-border);
+      text-align: center;
+    }
+    
+    .footer a {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-decoration: none;
+      letter-spacing: 0.5px;
+      transition: color 0.2s ease;
+    }
+    
     .footer a:hover {
-      text-decoration: underline;
+      color: var(--ember-2);
+    }
+    
+    /* Reveal animations */
+    .reveal {
+      opacity: 0;
+      transform: translateY(15px);
+      animation: reveal 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+    
+    .reveal-1 { animation-delay: 0ms; }
+    .reveal-2 { animation-delay: 80ms; }
+    .reveal-3 { animation-delay: 160ms; }
+    .reveal-4 { animation-delay: 240ms; }
+    .reveal-5 { animation-delay: 320ms; }
+    
+    @keyframes reveal {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
     }
   </style>
 </head>
 <body>
-  <div class="header">
-    <div class="logo">C</div>
-    <span class="title">Cognitia</span>
-  </div>
-  
-  <div class="section">
-    <div class="toggle-row">
-      <span class="toggle-label">Enable Cognitia</span>
-      <label class="toggle">
-        <input type="checkbox" id="enabled" checked>
-        <span class="toggle-slider"></span>
-      </label>
-    </div>
-  </div>
-  
-  <div class="section">
-    <div class="section-title">Configuration</div>
-    
-    <div class="input-group">
-      <label class="input-label" for="highlightStyle">Highlight Style</label>
-      <select id="highlightStyle" class="input">
-        <option value="dotted">Dotted Underline</option>
-        <option value="solid">Solid Underline</option>
-        <option value="dashed">Dashed Underline</option>
-        <option value="wavy">Wavy Underline</option>
-        <option value="tint">Background Tint</option>
-        <option value="tint-dotted">Tint + Dotted</option>
-        <option value="colored">Colored Text</option>
-      </select>
-    </div>
-    
-    <div class="preview-group">
-      <label class="input-label">Preview</label>
-      <div class="preview-box">
-        This is a <span id="previewHighlight" class="preview-highlight dotted">sample topic</span> in a tweet.
+  <div class="ember-border">
+    <div class="container">
+      <div class="header reveal reveal-1">
+        <div class="logo">C</div>
+        <span class="title">Cognitia</span>
+      </div>
+      
+      <div class="section reveal reveal-2">
+        <div class="glass-card">
+          <div class="toggle-row">
+            <span class="toggle-label">Enable Cognitia</span>
+            <label class="toggle">
+              <input type="checkbox" id="enabled" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+      
+      <div class="section reveal reveal-3">
+        <div class="section-title">Highlight Style</div>
+        <div class="style-swatches" id="styleSwatches">
+          <div class="style-swatch active" data-style="dotted">
+            <div class="swatch-preview dotted"></div>
+            <span class="swatch-label">Dotted</span>
+          </div>
+          <div class="style-swatch" data-style="solid">
+            <div class="swatch-preview solid"></div>
+            <span class="swatch-label">Solid</span>
+          </div>
+          <div class="style-swatch" data-style="dashed">
+            <div class="swatch-preview dashed"></div>
+            <span class="swatch-label">Dashed</span>
+          </div>
+          <div class="style-swatch" data-style="wavy">
+            <div class="swatch-preview wavy"></div>
+            <span class="swatch-label">Wavy</span>
+          </div>
+          <div class="style-swatch" data-style="tint">
+            <div class="swatch-preview tint"></div>
+            <span class="swatch-label">Tint</span>
+          </div>
+          <div class="style-swatch" data-style="tint-dotted">
+            <div class="swatch-preview tint-dotted"></div>
+            <span class="swatch-label">Combo</span>
+          </div>
+          <div class="style-swatch" data-style="colored">
+            <div class="swatch-preview colored">Aa</div>
+            <span class="swatch-label">Color</span>
+          </div>
+        </div>
+        
+        <div class="preview-box">
+          Learn about <span id="previewHighlight" class="preview-highlight dotted">SpaceX</span> and other topics.
+        </div>
+      </div>
+      
+      <div class="btn-group reveal reveal-4">
+        <button id="saveBtn" class="btn btn-primary">Save Settings</button>
+        <button id="chatBtn" class="btn btn-ember">
+          <span class="btn-icon">✨</span>Chat with Grok
+        </button>
+      </div>
+      
+      <div id="status" class="status"></div>
+      
+      <div class="footer reveal reveal-5">
+        <a href="https://x.ai" target="_blank">Powered by xAI</a>
       </div>
     </div>
-  </div>
-  
-  <button id="saveBtn" class="btn">Save Settings</button>
-  
-  <div id="status" class="status"></div>
-  
-  <div class="footer">
-    <a href="https://x.ai" target="_blank">Powered by xAI</a>
   </div>
   
   <script src="popup/index.js"></script>

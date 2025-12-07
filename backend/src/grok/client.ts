@@ -101,6 +101,48 @@ export async function chat(
   return data.choices[0]?.message?.content || 'Unable to generate response.';
 }
 
+export async function generalChat(
+  message: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<string> {
+  const messages: ChatMessage[] = [
+    {
+      role: 'system',
+      content: `You are Grok, a helpful AI assistant created by xAI. You are knowledgeable, witty, and always aim to provide accurate and helpful responses. You can discuss any topic the user wants to explore.`
+    },
+    ...history.map(msg => ({
+      role: msg.role as 'user' | 'assistant',
+      content: msg.content
+    })),
+    {
+      role: 'user',
+      content: message
+    }
+  ];
+  
+  const response = await fetch(`${XAI_BASE_URL}/chat/completions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${getApiKey()}`
+    },
+    body: JSON.stringify({
+      model: 'grok-4-1-fast-reasoning-latest',
+      messages,
+      max_tokens: 1000,
+      temperature: 0.7
+    })
+  });
+  
+  if (!response.ok) {
+    const error = await response.text();
+    throw new Error(`xAI API error: ${response.status} - ${error}`);
+  }
+  
+  const data = await response.json() as ChatCompletionResponse;
+  return data.choices[0]?.message?.content || 'Unable to generate response.';
+}
+
 export async function generateQuickQuestions(topic: string): Promise<string[]> {
   const messages: ChatMessage[] = [
     {

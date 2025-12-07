@@ -16,9 +16,28 @@ async function loadHighlightStyle(): Promise<void> {
   }
 }
 
+function loadFonts(): void {
+  if (!document.getElementById('cognitia-fonts')) {
+    // Google Fonts for Space Grotesk and JetBrains Mono
+    const googleFonts = document.createElement('link');
+    googleFonts.id = 'cognitia-fonts';
+    googleFonts.rel = 'stylesheet';
+    googleFonts.href = 'https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap';
+    document.head.appendChild(googleFonts);
+    
+    // Fontshare for Clash Display
+    const fontshare = document.createElement('link');
+    fontshare.id = 'cognitia-fonts-display';
+    fontshare.rel = 'stylesheet';
+    fontshare.href = 'https://api.fontshare.com/v2/css?f[]=clash-display@400,500,600,700&display=swap';
+    document.head.appendChild(fontshare);
+  }
+}
+
 async function init(): Promise<void> {
   console.log('[Cognitia] Initializing...');
   
+  loadFonts();
   await loadHighlightStyle();
   
   // Listen for settings changes
@@ -42,6 +61,12 @@ async function init(): Promise<void> {
     unprocessedIds.forEach(id => processedTweetIds.add(id));
     
     try {
+      // Check if extension context is still valid
+      if (!chrome.runtime?.id) {
+        console.warn('[Cognitia] Extension context invalidated. Please refresh the page.');
+        return;
+      }
+      
       const response = await chrome.runtime.sendMessage({
         type: 'GET_MATCHES',
         payload: { tweetIds: unprocessedIds }
@@ -56,7 +81,12 @@ async function init(): Promise<void> {
           }
         });
       }
-    } catch (error) {
+    } catch (error: any) {
+      // Handle extension context invalidated error gracefully
+      if (error?.message?.includes('Extension context invalidated')) {
+        console.warn('[Cognitia] Extension was updated. Please refresh the page to continue.');
+        return;
+      }
       console.error('[Cognitia] Error fetching matches:', error);
       unprocessedIds.forEach(id => processedTweetIds.delete(id));
     }

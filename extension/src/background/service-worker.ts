@@ -100,6 +100,31 @@ async function handleChat(
   }
 }
 
+async function handleGeneralChat(
+  message: string,
+  history: Array<{ role: 'user' | 'assistant'; content: string }>
+): Promise<MessageResponse<ChatResponse>> {
+  try {
+    const settings = await getSettings();
+    
+    const response = await fetch(`${settings.backendUrl}/api/chat/general`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message, history })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`Backend error: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    return { success: true, data };
+  } catch (error) {
+    console.error('[Cognitia] General chat error:', error);
+    return { success: false, error: String(error) };
+  }
+}
+
 async function handleGetQuickQuestions(
   topic: string
 ): Promise<MessageResponse<QuickQuestionsResponse>> {
@@ -140,13 +165,23 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
           message.payload.history
         );
       
+      case 'GENERAL_CHAT':
+        return handleGeneralChat(
+          message.payload.message,
+          message.payload.history
+        );
+      
       case 'GET_QUICK_QUESTIONS':
         return handleGetQuickQuestions(message.payload.topic);
       
       case 'OPEN_SIDEBAR':
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           if (tabs[0]?.id) {
-            chrome.tabs.sendMessage(tabs[0].id, message);
+            chrome.tabs.sendMessage(tabs[0].id, message, () => {
+              if (chrome.runtime.lastError) {
+                // Silently ignore
+              }
+            });
           }
         });
         return { success: true, data: null };
@@ -154,7 +189,24 @@ chrome.runtime.onMessage.addListener((message: MessageType, sender, sendResponse
       case 'CLOSE_SIDEBAR':
         chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
           if (tabs[0]?.id) {
-            chrome.tabs.sendMessage(tabs[0].id, message);
+            chrome.tabs.sendMessage(tabs[0].id, message, () => {
+              if (chrome.runtime.lastError) {
+                // Silently ignore
+              }
+            });
+          }
+        });
+        return { success: true, data: null };
+      
+      case 'OPEN_GENERAL_CHAT':
+        chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+          if (tabs[0]?.id) {
+            chrome.tabs.sendMessage(tabs[0].id, { type: 'OPEN_GENERAL_CHAT' }, () => {
+              // Suppress any errors (e.g., no content script on page)
+              if (chrome.runtime.lastError) {
+                // Silently ignore - content script may not be loaded on this page
+              }
+            });
           }
         });
         return { success: true, data: null };
