@@ -150,11 +150,17 @@ export async function crawlAndSave(url: string): Promise<number> {
   // Check if topic already exists
   const existing = getTopicByTitle(result.title);
   if (existing) {
-    console.log(`[Crawler] Topic "${result.title}" already exists, updating...`);
+    console.log(`[Crawler] Topic "${result.title}" already exists (id: ${existing.id}), updating...`);
+  } else {
+    console.log(`[Crawler] NEW topic discovered: ${result.title} - saving...`);
   }
   
   const id = insertTopic(result.title, result.url, result.summary);
-  console.log(`[Crawler] Saved topic: ${result.title} (id: ${id})`);
+  if (existing) {
+    console.log(`[Crawler] Updated topic: ${result.title} (id: ${id})`);
+  } else {
+    console.log(`[Crawler] Saved NEW topic: ${result.title} (id: ${id})`);
+  }
   
   return id;
 }
